@@ -1,0 +1,25 @@
+.main-container {
+  display: "flex";
+}
+
+/* .main-container .overlay {
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: none;
+  z-index: 99;
+} */
+
+.maincontainer {
+  /* padding: 0px 1rem; */
+  /* margin-right: 0 !important;
+  margin-left: 0 !important; */
+}
+
+@media (max-width: 961px) {
+  .main-container .overlay.show {
+    display: block;
+  }
+}

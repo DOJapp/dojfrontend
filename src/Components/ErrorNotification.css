@@ -1,0 +1,11 @@
+/* ErrorNotification.css */
+.error-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #f44336;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    z-index: 1000;
+}

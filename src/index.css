@@ -1,0 +1,53 @@
+html {
+  font-size: 75.5%;
+  font-family: 'Philosopher' !important;
+}
+
+@media(max-width:998px) {
+  html {
+    font-size: 60%;
+  }
+}
+
+@media(max-width:500) {
+  html {
+    font-size: 45%;
+  }
+}
+
+@media(max-width:300px) {
+  html {
+    font-size: 35%;
+  }
+}
+
+
+body {
+  margin: 0;
+  font-family: 'Philosopher';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+ul {
+  list-style: none;
+}
+
+li {
+  list-style: none;
+}
+
+a {
+  text-decoration: none;
+}
+
+.css-14tayut-MuiGrid-root {
+  display: inline-block;
+  height: 0%;
+  width: 0%;
+}
