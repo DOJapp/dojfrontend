@@ -12,8 +12,14 @@ export const login_endpoint="admin/login";
 // Category 
 export const category="admin/category";
 
-// Category 
+// Banner 
 export const banner="admin/banner";
+
+// products 
+export const products="admin/products";
+
+// restaurants 
+export const restaurants="admin/restaurants";
 
 
 //Customer

@@ -2,7 +2,7 @@ import * as actionTypes from "../actionTypes";
 import { call, put, takeLeading } from "redux-saga/effects";
 import Swal from "sweetalert2";
 import { ApiRequest } from "../../utils/apiRequest"; // Ensure ApiRequest is imported
-import { api_url, product } from "../../utils/Constants"; // Adjust these imports based on your API structure
+import { api_url, products } from "../../utils/Constants"; // Adjust these imports based on your API structure
 import { Colors } from "../../assets/styles";
 import {
   setProducts,
@@ -21,11 +21,11 @@ function* getProductsSaga() {
   try {
     yield put({ type: actionTypes.SET_IS_LOADING, payload: true }); // Set loading state
     const response = yield call(ApiRequest.getRequest, {
-      url: api_url + product, // Adjust the API endpoint as needed
+      url: api_url + products,
     });
 
     if (response?.success) {
-      console.log("response", response);
+      console.log("response", response.data);
       yield put(setProducts(response.data)); // Dispatch the setProducts action
     } else {
       yield put(createProductFailure(response.message)); // Handle failure
@@ -53,7 +53,7 @@ function* getProductByIdSaga(action) {
     const { payload } = action; // Assuming the action contains the product ID
 
     const response = yield call(ApiRequest.getRequest, {
-      url: `${api_url}${product}/${payload}`, // Adjust endpoint with product ID
+      url: `${api_url}${products}/${payload}`, // Adjust endpoint with product ID
     });
 
     if (response?.success) {
@@ -94,13 +94,13 @@ function* deleteProductSaga(actions) {
     if (result.isConfirmed) {
       // Call API to delete the product by ID
       const response = yield call(ApiRequest.deleteRequest, {
-        url: `${api_url}${product}/${payload._id}`, // Ensure correct API URL with product ID
+        url: `${api_url}${products}/${payload}`, // Ensure correct API URL with product ID
       });
 
       // If API deletion is successful
       if (response?.success) {
         // Dispatch the success action to remove the product from the store
-        yield put(deleteProductSuccess(payload._id));
+        yield put(deleteProductSuccess(payload));
 
         // Fetch the latest products after deletion
         yield put(getProducts());
@@ -142,7 +142,7 @@ function* createProductSaga(actions) {
     const { payload } = actions;
 
     const response = yield ApiRequest.postRequest({
-      url: api_url + product, // Adjust the API endpoint as needed
+      url: `${api_url}${products}`, // Adjust endpoint with product
       data: payload, // Include the new product data
     });
 
@@ -169,7 +169,7 @@ function* createProductSaga(actions) {
       text: error.message,
     });
   } finally {
-    yield put({ type: actionTypes.SET_IS_LOADING, payload: false }); // Set loading state to false
+    yield put({ type: actionTypes.SET_IS_LOADING, payload: false });
   }
 }
 
@@ -182,7 +182,7 @@ function* updateProductSaga(action) {
 
     // Make the API request to update the product
     const response = yield ApiRequest.putRequest({
-      url: `${api_url}admin/product/${id}`, // Correctly access id from action.payload
+      url: `${api_url}${products}/${id}`,
       data: data, // Include the updated product data
     });
 

@@ -84,7 +84,6 @@ const Add = ({ dispatch }) => {
       try {
         await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulating a delay
 
-        Swal.fire("Success!", "Banner added successfully!", "success");
         navigate("/banner");
       } catch (error) {
         console.error("Error adding banner:", error);
@@ -156,7 +155,7 @@ const Add = ({ dispatch }) => {
                 onChange={(e) => setStatus(e.target.value)}
               >
                 <MenuItem value="Active">Active</MenuItem>
-                <MenuItem value="Blocked">Blocked</MenuItem>
+                <MenuItem value="Block">Blocked</MenuItem>
               </Select>
             </FormControl>
           </Grid>

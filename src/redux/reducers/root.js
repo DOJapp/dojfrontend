@@ -5,11 +5,16 @@ import banner from "./banner";
 import errorReducer from "./errorSlice";
 import authReducer from "./auth";
 import category from "./category";
+import product from "./product";
+import restaurant from "./restaurant";
+
 const rootReducer = combineReducers({
   dashboard,
   customer,
   banner,
   category,
+  product,
+  restaurant,
   error: errorReducer,
   auth: authReducer,
 });

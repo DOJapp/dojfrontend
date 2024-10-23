@@ -8,8 +8,20 @@ import { StyledEngineProvider, ThemeProvider, createTheme } from "@mui/material"
 import App from "./App";
 
 import "./index.css";
-
-const theme = createTheme();
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#1976d2', // Primary color
+    },
+    secondary: {
+      main: '#dc004e', // Secondary color
+    },
+    success: {
+      main: '#4caf50', // Success color (standard naming for green)
+      contrastText: '#fff', // Text color for success
+    },
+  },
+});
 
 ReactDOM.render(
   <React.StrictMode>

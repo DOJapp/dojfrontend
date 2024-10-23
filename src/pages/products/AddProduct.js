@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Grid,
   TextField,
@@ -10,14 +10,21 @@ import {
   FormControl,
   InputLabel,
 } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import { getCategories } from "../../redux/Actions/categoryActions";
 import { useStyles } from "../../assets/styles.js";
+import { createProduct } from "../../redux/Actions/productActions";
+import Swal from "sweetalert2"; // Import Swal for alerts
 
 const AddProduct = () => {
   const classes = useStyles();
+  const dispatch = useDispatch();
+  const categories = useSelector((state) => state.category.categories);
+
   const [product, setProduct] = useState({
     name: "",
     description: "",
-    category: "",
+    categoryId: "",
     price: "",
     discount: "",
     quantity: "",
@@ -25,17 +32,25 @@ const AddProduct = () => {
     deliveryMode: "",
   });
 
-  const [imagePreview, setImagePreview] = useState(null); // State for image preview
+  const [status, setStatus] = useState("Active"); // State for product status
+  const [imagePreview, setImagePreview] = useState(null);
+
+  // State for error messages
+  const [errors, setErrors] = useState({
+    name: "",
+    categoryId: "",
+    price: "",
+    quantity: "",
+    deliveryMode: "",
+    image: "",
+  });
+
+  useEffect(() => {
+    dispatch(getCategories());
+  }, [dispatch]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-
-    // Validate numeric inputs
-    if (name === "price" || name === "discount" || name === "quantity") {
-      const numericValue = value.replace(/[^0-9.]/g, "");
-      setProduct((prev) => ({ ...prev, [name]: numericValue }));
-      return;
-    }
 
     if (files) {
       const file = files[0];
@@ -52,21 +67,100 @@ const AddProduct = () => {
     }
   };
 
-  const handleSubmit = () => {
-    console.log("Product Added:", product);
-    // Reset the form after submission
-    setProduct({
+  const validate = () => {
+    let valid = true;
+    const newErrors = {
       name: "",
-      description: "",
-      category: "",
+      categoryId: "",
       price: "",
-      discount: "",
       quantity: "",
-      image: null,
       deliveryMode: "",
-    });
-    setImagePreview(null);
+      image: "",
+    };
+
+    if (!product.name) {
+      newErrors.name = "Name is required.";
+      valid = false;
+    }
+    if (!product.categoryId) {
+      newErrors.categoryId = "Category is required.";
+      valid = false;
+    }
+    if (!product.price) {
+      newErrors.price = "Price is required.";
+      valid = false;
+    }
+    if (!product.quantity) {
+      newErrors.quantity = "Quantity is required.";
+      valid = false;
+    }
+    if (!product.deliveryMode) {
+      newErrors.deliveryMode = "Delivery mode is required.";
+      valid = false;
+    }
+    if (!product.image) {
+      newErrors.image = "Image is required.";
+      valid = false;
+    }
+
+    setErrors(newErrors);
+    return valid; // Return whether the form is valid
   };
+
+  const handleSubmit = () => {
+    // Reset errors
+    setErrors({
+      name: "",
+      categoryId: "",
+      price: "",
+      quantity: "",
+      deliveryMode: "",
+      image: "",
+    });
+
+    if (!validate()) return; // Validate and stop if there are errors
+
+    // Create FormData to handle file uploads
+    const formData = new FormData();
+    formData.append("name", product.name);
+    formData.append("description", product.description);
+    formData.append("categoryId", product.categoryId);
+    formData.append("price", product.price);
+    formData.append("discount", product.discount);
+    formData.append("quantity", product.quantity);
+    formData.append("image", product.image);
+    formData.append("deliveryMode", product.deliveryMode);
+    formData.append("status", status); // Append status to FormData
+
+    // Dispatch the create product action
+    dispatch(createProduct(formData));
+  };
+
+  // Listen for changes in product creation success or failure
+  const productState = useSelector((state) => state.product);
+
+  useEffect(() => {
+    if (productState.loading) return;
+
+    if (productState.error) {
+      Swal.fire("Error!", productState.error, "error");
+    } else if (productState.products.length > 0) {
+      Swal.fire("Success!", "Product added successfully!", "success");
+      // Reset form after submission
+      setProduct({
+        name: "",
+        description: "",
+        categoryId: "",
+        price: "",
+        discount: "",
+        quantity: "",
+        image: null,
+        deliveryMode: "",
+      });
+      setStatus("Active"); // Reset status to default
+      setImagePreview(null);
+    }
+  }, [productState]);
 
   return (
     <Paper elevation={3} style={{ padding: "20px" }}>
@@ -83,22 +177,34 @@ const AddProduct = () => {
             variant="outlined"
             fullWidth
             required
+            error={!!errors.name}
+            helperText={errors.name}
           />
         </Grid>
 
         <Grid item xs={12} sm={6}>
-          <FormControl fullWidth required variant="outlined">
+          <FormControl
+            fullWidth
+            required
+            variant="outlined"
+            error={!!errors.categoryId}
+          >
             <InputLabel>Category</InputLabel>
             <Select
               label="Category"
-              name="category"
-              value={product.category}
+              name="categoryId"
+              value={product.categoryId}
               onChange={handleChange}
             >
-              <MenuItem value="electronics">Electronics</MenuItem>
-              <MenuItem value="clothing">Clothing</MenuItem>
-              <MenuItem value="home">Home</MenuItem>
+              {categories.map((category) => (
+                <MenuItem key={category._id} value={category._id}>
+                  {category.title}
+                </MenuItem>
+              ))}
             </Select>
+            {errors.categoryId && (
+              <p style={{ color: "red" }}>{errors.categoryId}</p>
+            )}
           </FormControl>
         </Grid>
 
@@ -106,12 +212,14 @@ const AddProduct = () => {
           <TextField
             label="Price"
             name="price"
-            type="text" // Changed to text for custom validation
+            type="text"
             value={product.price}
             onChange={handleChange}
             variant="outlined"
             fullWidth
             required
+            error={!!errors.price}
+            helperText={errors.price}
           />
         </Grid>
 
@@ -119,12 +227,11 @@ const AddProduct = () => {
           <TextField
             label="Discount"
             name="discount"
-            type="text" // Changed to text for custom validation
+            type="text"
             value={product.discount}
             onChange={handleChange}
             variant="outlined"
             fullWidth
-            required
           />
         </Grid>
 
@@ -132,12 +239,14 @@ const AddProduct = () => {
           <TextField
             label="Quantity"
             name="quantity"
-            type="text" // Changed to text for custom validation
+            type="text"
             value={product.quantity}
             onChange={handleChange}
             variant="outlined"
             fullWidth
             required
+            error={!!errors.quantity}
+            helperText={errors.quantity}
           />
         </Grid>
 
@@ -153,18 +262,25 @@ const AddProduct = () => {
                 onChange={handleChange}
               />
             </Button>
+            {errors.image && (
+              <p style={{ color: "red" }}>{errors.image}</p>
+            )}
           </Grid>
           {imagePreview && (
             <Grid item xs={4}>
               <div className="image-preview">
-                <img src={imagePreview} alt="Preview" />
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  style={{ width: "100%", height: "auto" }}
+                />
               </div>
             </Grid>
           )}
         </Grid>
 
         <Grid item xs={12} sm={6}>
-          <FormControl fullWidth required variant="outlined">
+          <FormControl fullWidth required variant="outlined" error={!!errors.deliveryMode}>
             <InputLabel>Delivery Mode</InputLabel>
             <Select
               label="Delivery Mode"
@@ -172,8 +288,26 @@ const AddProduct = () => {
               value={product.deliveryMode}
               onChange={handleChange}
             >
-              <MenuItem value="standard">Standard</MenuItem>
-              <MenuItem value="express">Express</MenuItem>
+              <MenuItem value="">Select Delivery Mode</MenuItem>
+              <MenuItem value="instant">Instant</MenuItem>
+              <MenuItem value="scheduled">Scheduled</MenuItem>
+            </Select>
+            {errors.deliveryMode && (
+              <p style={{ color: "red" }}>{errors.deliveryMode}</p>
+            )}
+          </FormControl>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <FormControl fullWidth variant="outlined" required>
+            <InputLabel>Status</InputLabel>
+            <Select
+              label="Status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              <MenuItem value="Active">Active</MenuItem>
+              <MenuItem value="Blocked">Blocked</MenuItem>
             </Select>
           </FormControl>
         </Grid>
@@ -186,7 +320,6 @@ const AddProduct = () => {
             onChange={handleChange}
             variant="outlined"
             fullWidth
-            required
             multiline
           />
         </Grid>

@@ -4,34 +4,42 @@ import { Grid, IconButton } from "@mui/material";
 import MaterialTable from "material-table";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  getProducts,
-  deleteProduct,
-} from "../../redux/Actions/productActions.js";
+import { getTags, deleteTag } from "../../redux/Actions/tagsActions.js"; // Correct action import
 import { AddCircleRounded, Edit, Delete } from "@mui/icons-material";
+import Swal from "sweetalert2"; // Import SweetAlert for delete confirmation
 
-const ProductList = () => {
+const TagList = () => {
   const classes = useStyles();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Access products from Redux store
-  const productsData = useSelector((state) => state.product.products);
-  const error = useSelector((state) => state.product.error);
+  // Access tags from Redux store
+  const tagData = useSelector((state) => state.tag.tags);
+  const error = useSelector((state) => state.tag.error);
 
   useEffect(() => {
-    // Dispatch action to fetch products
-    dispatch(getProducts());
+    // Dispatch action to fetch tags
+    dispatch(getTags());
   }, [dispatch]);
 
   const handleEdit = (rowData) => {
-    // Redirect to the edit page with the product ID
-    navigate(`/products/edit/${rowData._id}`);
+    // Redirect to the edit page with the tag ID
+    navigate(`/tags/edit/${rowData._id}`);
   };
 
   const handleDelete = (rowData) => {
-    // Dispatch delete action
-    dispatch(deleteProduct(rowData._id));
+    Swal.fire({
+      title: "Are you sure?",
+      text: "This action cannot be undone!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        dispatch(deleteTag(rowData._id));
+      }
+    });
   };
 
   const displayTable = () => {
@@ -39,42 +47,18 @@ const ProductList = () => {
       <Grid container spacing={1}>
         <Grid item lg={12}>
           <MaterialTable
-            title="Products"
-            data={productsData.map((product, index) => ({
-              ...product,
+            title="Tags"
+            data={tagData.map((tag, index) => ({
+              ...tag,
               serial: index + 1,
-            }))} // Map data to add a serial number
+            }))}
             columns={[
               {
                 title: "S.No",
                 field: "serial",
               },
-              {
-                title: "Name",
-                field: "name",
-              },
-              {
-                title: "Image",
-                field: "image",
-                render: (rowData) => (
-                  <img
-                    src={rowData.image || "fallback_image_url"}
-                    alt={rowData.name}
-                    style={{ width: 50, height: 50 }}
-                  />
-                ),
-              },
+              { title: "Title", field: "title" },
               { title: "Status", field: "status" },
-              { title: "Price", field: "price" },
-              { title: "Quantity", field: "quantity" },
-              {
-                title: "Category",
-                render: (rowData) => rowData.categoryId?.title || "N/A", // Safely access category title
-              },
-              {
-                title: "Admin",
-                render: (rowData) => rowData.adminId?.name || "N/A", // Safely access category title
-              },
               {
                 title: "Action",
                 render: (rowData) => (
@@ -102,9 +86,9 @@ const ProductList = () => {
               search: true,
               paging: true,
               pageSize: 5,
-              actionsColumnIndex: -1, // Place action buttons at the end
-              emptyRowsWhenPaging: false, // Avoid extra empty rows
-              debounceInterval: 500, // Debounce search input for better performance
+              actionsColumnIndex: -1,
+              emptyRowsWhenPaging: false,
+              debounceInterval: 500,
             }}
             actions={[
               {
@@ -114,9 +98,9 @@ const ProductList = () => {
                     <div className={classes.addButtontext}>Add New</div>
                   </div>
                 ),
-                tooltip: "Add Product",
+                tooltip: "Add Tag",
                 isFreeAction: true,
-                onClick: () => navigate("/products/add"),
+                onClick: () => navigate("/tags/add"),
               },
             ]}
           />
@@ -136,4 +120,4 @@ const ProductList = () => {
   );
 };
 
-export default ProductList;
+export default TagList;

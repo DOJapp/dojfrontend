@@ -24,6 +24,16 @@ import ProductList from "./pages/products/ProductList";
 import ProductAdd from "./pages/products/AddProduct.js";
 import EditProduct from "./pages/products/EditProduct.js";
 
+// restaurant
+import RestaurantList from "./pages/restaurant/List.js";
+import RestaurantAdd from "./pages/restaurant/Add.js";
+import EditRestaurant from "./pages/restaurant/Edit.js";
+
+// tags
+import TagList from "./pages/tags/List.js";
+import TagAdd from "./pages/tags/Add.js";
+import EditTag from "./pages/tags/Edit.js";
+
 function App() {
   return (
     <Router>
@@ -40,6 +50,11 @@ function App() {
           <Route path="/users" element={<DisplayUser />} />
           <Route path="/AddUser" element={<AddUser />} />
 
+          {/* Product tags Routes */}
+          <Route path="/tags" element={<TagList />} />
+          <Route path="/tags/add" element={<TagAdd />} />
+          <Route path="/tags/edit/:id" element={<EditTag />} />
+
           {/* Product Category Routes */}
           <Route path="/category" element={<ProductCategoryList />} />
           <Route path="/category/add" element={<ProductCategoryAdd />} />
@@ -49,6 +64,11 @@ function App() {
           <Route path="/products" element={<ProductList />} />
           <Route path="/products/add" element={<ProductAdd />} />
           <Route path="/products/edit/:id" element={<EditProduct />} />
+
+          {/* restaurants Routes */}
+          <Route path="/restaurants" element={<RestaurantList />} />
+          <Route path="/restaurants/add" element={<RestaurantAdd />} />
+          <Route path="/restaurants/edit/:id" element={<EditRestaurant />} />
 
           {/* Banner Routes */}
           <Route path="/banner" element={<BannerList />} />

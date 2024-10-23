@@ -1,37 +1,37 @@
 import React, { useEffect } from "react";
 import { useStyles } from "../../assets/styles.js";
-import { Grid, IconButton } from "@mui/material";
+import { Grid, IconButton, Chip } from "@mui/material";
 import MaterialTable from "material-table";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  getProducts,
-  deleteProduct,
-} from "../../redux/Actions/productActions.js";
+  getRestaurants,
+  deleteRestaurant,
+} from "../../redux/Actions/restaurantActions.js";
 import { AddCircleRounded, Edit, Delete } from "@mui/icons-material";
 
-const ProductList = () => {
+const RestaurantList = () => {
   const classes = useStyles();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Access products from Redux store
-  const productsData = useSelector((state) => state.product.products);
-  const error = useSelector((state) => state.product.error);
+  // Access restaurant data from Redux store
+  const restaurantData = useSelector((state) => state.restaurant.restaurants);
+  const error = useSelector((state) => state.restaurant.error);
 
   useEffect(() => {
-    // Dispatch action to fetch products
-    dispatch(getProducts());
+    // Dispatch action to fetch restaurants
+    dispatch(getRestaurants());
   }, [dispatch]);
 
   const handleEdit = (rowData) => {
-    // Redirect to the edit page with the product ID
-    navigate(`/products/edit/${rowData._id}`);
+    // Redirect to the edit page with the restaurant ID
+    navigate(`/restaurants/edit/${rowData._id}`);
   };
 
   const handleDelete = (rowData) => {
     // Dispatch delete action
-    dispatch(deleteProduct(rowData._id));
+    dispatch(deleteRestaurant(rowData._id));
   };
 
   const displayTable = () => {
@@ -39,19 +39,19 @@ const ProductList = () => {
       <Grid container spacing={1}>
         <Grid item lg={12}>
           <MaterialTable
-            title="Products"
-            data={productsData.map((product, index) => ({
-              ...product,
+            title="Restaurants"
+            data={restaurantData.map((restaurant, index) => ({
+              ...restaurant,
               serial: index + 1,
-            }))} // Map data to add a serial number
+            }))}
             columns={[
               {
                 title: "S.No",
                 field: "serial",
               },
               {
-                title: "Name",
-                field: "name",
+                title: "Title",
+                field: "title", // Adjust based on your actual field name for title
               },
               {
                 title: "Image",
@@ -64,16 +64,51 @@ const ProductList = () => {
                   />
                 ),
               },
-              { title: "Status", field: "status" },
-              { title: "Price", field: "price" },
-              { title: "Quantity", field: "quantity" },
               {
-                title: "Category",
-                render: (rowData) => rowData.categoryId?.title || "N/A", // Safely access category title
+                title: "Address",
+                field: "address", // Ensure this field exists in your data
+              },
+              {
+                title: "Status",
+                render: (rowData) =>
+                  rowData.status === "Active" ? (
+                    <Chip
+                      label="Active"
+                      size="small"
+                      variant="outlined"
+                      color="success"
+                    />
+                  ) : (
+                    <Chip
+                      label="Blocked"
+                      size="small"
+                      variant="outlined"
+                      color="error"
+                    />
+                  ),
+              },
+              {
+                title: "Open",
+                render: (rowData) =>
+                  rowData.isOpen ? (
+                    <Chip
+                      label="Open"
+                      size="small"
+                      variant="outlined"
+                      color="success"
+                    />
+                  ) : (
+                    <Chip
+                      label="Close"
+                      size="small"
+                      variant="outlined"
+                      color="error"
+                    />
+                  ),
               },
               {
                 title: "Admin",
-                render: (rowData) => rowData.adminId?.name || "N/A", // Safely access category title
+                render: (rowData) => rowData.adminId?.name || "N/A", // Assuming adminId contains a name property
               },
               {
                 title: "Action",
@@ -101,10 +136,10 @@ const ProductList = () => {
               sorting: true,
               search: true,
               paging: true,
-              pageSize: 5,
-              actionsColumnIndex: -1, // Place action buttons at the end
-              emptyRowsWhenPaging: false, // Avoid extra empty rows
-              debounceInterval: 500, // Debounce search input for better performance
+              pageSize: 10,
+              actionsColumnIndex: -1,
+              emptyRowsWhenPaging: false,
+              debounceInterval: 500,
             }}
             actions={[
               {
@@ -114,9 +149,9 @@ const ProductList = () => {
                     <div className={classes.addButtontext}>Add New</div>
                   </div>
                 ),
-                tooltip: "Add Product",
+                tooltip: "Add Restaurant",
                 isFreeAction: true,
-                onClick: () => navigate("/products/add"),
+                onClick: () => navigate("/restaurants/add"),
               },
             ]}
           />
@@ -136,4 +171,4 @@ const ProductList = () => {
   );
 };
 
-export default ProductList;
+export default RestaurantList;

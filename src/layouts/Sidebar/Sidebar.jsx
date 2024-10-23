@@ -54,6 +54,23 @@ const routes = [
     ],
   },
   {
+    path: "/restaurants",
+    name: "Restaurants",
+    icon: <BiAbacus />,
+    subRoutes: [
+      {
+        path: "/restaurants", // This route will show the list of products
+        name: "List",
+        icon: <BiAbacus />,
+      },
+      {
+        path: "/restaurants/add", // This route will show the add product form
+        name: "Add",
+        icon: <BiAbacus />,
+      },
+    ],
+  },
+  {
     path: "/banner",
     name: "Banner",
     icon: <BiAbacus />,

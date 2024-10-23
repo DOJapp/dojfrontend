@@ -73,7 +73,7 @@ export const useStyles = makeStyles((theme) => ({
   addButton: {
     padding: "5px 10px",
     backgroundColor: Colors.primaryDark,
-    borderRadius: 10,
+    borderRadius: 5,
     color: "#fff",
     display: "flex",
     alignItems: "center",
