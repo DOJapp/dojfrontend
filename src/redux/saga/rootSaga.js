@@ -4,7 +4,8 @@ import dashboardSaga from "./dashboardSaga";
 import authSaga from "./authSaga";
 import categorySaga from "./categorySaga";
 import productSaga from "./productSaga";
-import restaurantSaga from "./restaurantSaga";
+import partnerSaga from "./partnerSaga";
+import tagSaga from "./tagSaga";
 export default function* rootSaga() {
   yield all([
     bannerSaga(),
@@ -12,6 +13,7 @@ export default function* rootSaga() {
     authSaga(),
     categorySaga(),
     productSaga(),
-    restaurantSaga(),
+    partnerSaga(),
+    tagSaga(),
   ]);
 }

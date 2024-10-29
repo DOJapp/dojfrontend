@@ -5,33 +5,37 @@ import MaterialTable from "material-table";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  getRestaurants,
-  deleteRestaurant,
-} from "../../redux/Actions/restaurantActions.js";
+  getPartners,
+  deletePartner,
+} from "../../redux/Actions/partnerActions.js";
 import { AddCircleRounded, Edit, Delete } from "@mui/icons-material";
 
-const RestaurantList = () => {
+const PartnerList = () => {
   const classes = useStyles();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Access restaurant data from Redux store
-  const restaurantData = useSelector((state) => state.restaurant.restaurants);
-  const error = useSelector((state) => state.restaurant.error);
+  // Access partner data from Redux store
+  const partnerData = useSelector((state) => state.partner.partners);
+  const error = useSelector((state) => state.partner.error);
 
   useEffect(() => {
-    // Dispatch action to fetch restaurants
-    dispatch(getRestaurants());
+    // Dispatch action to fetch partners
+    dispatch(getPartners());
   }, [dispatch]);
 
   const handleEdit = (rowData) => {
-    // Redirect to the edit page with the restaurant ID
-    navigate(`/restaurants/edit/${rowData._id}`);
+    // Redirect to the edit page with the partner ID
+    navigate(`/partners/edit/${rowData._id}`);
+  };
+  const handleStore = (rowData) => {
+    // Redirect to the edit page with the partner ID
+    navigate(`/partners/edit/${rowData._id}`);
   };
 
   const handleDelete = (rowData) => {
     // Dispatch delete action
-    dispatch(deleteRestaurant(rowData._id));
+    dispatch(deletePartner(rowData._id));
   };
 
   const displayTable = () => {
@@ -39,9 +43,9 @@ const RestaurantList = () => {
       <Grid container spacing={1}>
         <Grid item lg={12}>
           <MaterialTable
-            title="Restaurants"
-            data={restaurantData.map((restaurant, index) => ({
-              ...restaurant,
+            title="Partners"
+            data={partnerData.map((partner, index) => ({
+              ...partner,
               serial: index + 1,
             }))}
             columns={[
@@ -50,23 +54,16 @@ const RestaurantList = () => {
                 field: "serial",
               },
               {
-                title: "Title",
-                field: "title", // Adjust based on your actual field name for title
+                title: "Name",
+                field: "name", // Adjust based on your actual field name for title
               },
               {
-                title: "Image",
-                field: "image",
-                render: (rowData) => (
-                  <img
-                    src={rowData.image || "fallback_image_url"}
-                    alt={rowData.name}
-                    style={{ width: 50, height: 50 }}
-                  />
-                ),
+                title: "Email",
+                field: "email",
               },
               {
-                title: "Address",
-                field: "address", // Ensure this field exists in your data
+                title: "Phone No",
+                field: "phone", // Ensure this field exists in your data
               },
               {
                 title: "Status",
@@ -88,32 +85,9 @@ const RestaurantList = () => {
                   ),
               },
               {
-                title: "Open",
-                render: (rowData) =>
-                  rowData.isOpen ? (
-                    <Chip
-                      label="Open"
-                      size="small"
-                      variant="outlined"
-                      color="success"
-                    />
-                  ) : (
-                    <Chip
-                      label="Close"
-                      size="small"
-                      variant="outlined"
-                      color="error"
-                    />
-                  ),
-              },
-              {
-                title: "Admin",
-                render: (rowData) => rowData.adminId?.name || "N/A", // Assuming adminId contains a name property
-              },
-              {
                 title: "Action",
                 render: (rowData) => (
-                  <div>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
                     <IconButton
                       onClick={() => handleEdit(rowData)}
                       color="primary"
@@ -127,6 +101,18 @@ const RestaurantList = () => {
                       aria-label="delete"
                     >
                       <Delete />
+                    </IconButton>
+                    <IconButton
+                      onClick={() => handleStore(rowData)}
+                      color="success"
+                      aria-label="store"
+                    >
+                      <Chip
+                        label="Store"
+                        size="small"
+                        variant="outlined"
+                        color="success"
+                      />
                     </IconButton>
                   </div>
                 ),
@@ -149,9 +135,9 @@ const RestaurantList = () => {
                     <div className={classes.addButtontext}>Add New</div>
                   </div>
                 ),
-                tooltip: "Add Restaurant",
+                tooltip: "Add Partner",
                 isFreeAction: true,
-                onClick: () => navigate("/restaurants/add"),
+                onClick: () => navigate("/partners/add"),
               },
             ]}
           />
@@ -171,4 +157,4 @@ const RestaurantList = () => {
   );
 };
 
-export default RestaurantList;
+export default PartnerList;

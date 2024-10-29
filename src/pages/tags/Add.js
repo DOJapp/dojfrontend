@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useStyles } from "../../assets/styles.js";
 import {
   FormControl,
@@ -13,61 +13,61 @@ import List from "@mui/icons-material/List";
 import { useNavigate } from "react-router-dom";
 import Loader from "../../Components/loading/Loader.js";
 import Swal from "sweetalert2";
-import { connect } from "react-redux";
-import { createTags } from "../../redux/Actions/tagsActions.js";
+import { useDispatch, useSelector } from "react-redux"; // Use useDispatch instead of connect
+import {
+  createTag,
+  createTagFailure,
+} from "../../redux/Actions/tagsActions.js";
 
-const Add = ({ dispatch }) => {
+const Add = () => {
   const navigate = useNavigate();
   const classes = useStyles();
+  const dispatch = useDispatch(); // Use dispatch from useDispatch
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState("Active");
   const [error, setError] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
+  const tagState = useSelector((state) => state.tag); // Get tag state from Redux
 
-  const handleError = (input, value) => {
-    setError((prev) => ({ ...prev, [input]: value }));
-  };
+  // Form validation logic
+  const validate = useCallback(() => {
+    const newError = {};
+    if (!title) newError.title = "Title is required";
+    setError(newError);
+    return Object.keys(newError).length === 0; // Return true if no errors
+  }, [title]);
 
-  const validation = () => {
-    let isValid = true;
-
-    if (!title) {
-      handleError("title", "Title is required");
-      isValid = false;
-    } else {
-      handleError("title", "");
-    }
-
-    return isValid;
-  };
-
-  const handleSubmit = async () => {
-    if (validation()) {
-      setIsLoading(true);
-
-      // Use FormData to handle tag creation
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("status", status);
+  // Submit handler for creating the tag
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Prevent default form submission behavior
+    if (validate()) {
+      const tagData = { title, status };
 
       try {
-        // Dispatch the action to create the tags
-        await dispatch(createTags(formData));
-
-        // Show success message
-        Swal.fire("Success!", "Tag added successfully!", "success");
-
-        // Navigate to tags list
-        navigate("/tags");
+        // Dispatch the createTag action
+        await dispatch(createTag(tagData));
       } catch (error) {
-        console.error("Error adding tags:", error);
-        Swal.fire("Error!", "Failed to add tag.", "error");
-      } finally {
-        setIsLoading(false);
+        // Dispatch failure action and show error alert from API response
+        dispatch(createTagFailure("Failed to add tag"));
       }
     }
   };
 
+  // Handle success and error after tagState changes
+  useEffect(() => {
+    if (tagState.loading) return;
+
+    if (tagState.error) {
+      Swal.fire("Error!", tagState.error, "error");
+    } else if (tagState.success) {
+      // Reset form after successful submission
+      setTitle("");
+      setStatus("Active");
+      setError({});
+      navigate("/tags"); // Navigate after success
+    }
+  }, [tagState, navigate]);
+
+  // Reset form handler
   const handleReset = () => {
     setTitle("");
     setStatus("Active");
@@ -77,8 +77,8 @@ const Add = ({ dispatch }) => {
   return (
     <div className={classes.container}>
       <div className={classes.box}>
-        {isLoading && <Loader />}
-        <Grid container spacing={2}>
+        {tagState.loading && <Loader />}
+        <Grid container spacing={2} component="form" onSubmit={handleSubmit}>
           <Grid item xs={12}>
             <div className={classes.headingContainer}>
               <div className={classes.heading}>Add Tags</div>
@@ -100,7 +100,6 @@ const Add = ({ dispatch }) => {
               onChange={(e) => setTitle(e.target.value)}
               variant="outlined"
               fullWidth
-              required
               error={!!error.title}
               helperText={error.title}
             />
@@ -121,14 +120,14 @@ const Add = ({ dispatch }) => {
           </Grid>
 
           <Grid item xs={12} container justifyContent="center" spacing={2}>
-            <Grid item>
+            <Grid item >
               <Button
-                onClick={handleSubmit}
-                disabled={isLoading}
                 variant="contained"
                 color="primary"
+                type="submit" // Change to type submit for form submission
+                disabled={tagState.loading}
               >
-                Submit
+                {tagState.loading ? "Submitting..." : "Submit"} {/* Changed the text */}
               </Button>
             </Grid>
 
@@ -148,6 +147,4 @@ const Add = ({ dispatch }) => {
   );
 };
 
-const mapDispatchToProps = (dispatch) => ({ dispatch });
-
-export default connect(null, mapDispatchToProps)(Add);
+export default Add;

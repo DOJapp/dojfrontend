@@ -15,17 +15,17 @@ import {
 import { Visibility, VisibilityOff } from "@mui/icons-material"; // Icons for password visibility
 import { useStyles } from "../../assets/styles.js";
 import Swal from "sweetalert2";
-import { createRestaurant, getRestaurantById } from "../../redux/Actions/restaurantActions.js";
+import { createPartner, getPartnerById } from "../../redux/Actions/partnerActions.js";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 
-const EditRestaurant = () => {
+const EditPartner = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { id } = useParams(); // Get restaurant ID from URL
+  const { id } = useParams(); // Get partner ID from URL
 
-  const [restaurant, setRestaurant] = useState({
+  const [partner, setPartner] = useState({
     name: "",
     email: "",
     password: "",
@@ -47,50 +47,50 @@ const EditRestaurant = () => {
   const [showPassword, setShowPassword] = useState(false); // State for password visibility
 
   useEffect(() => {
-    // Fetch restaurant data by ID when the component mounts
-    dispatch(getRestaurantById(id));
+    // Fetch partner data by ID when the component mounts
+    dispatch(getPartnerById(id));
   }, [dispatch, id]);
 
-  const restaurantState = useSelector((state) => state.restaurant);
+  const partnerState = useSelector((state) => state.partner);
 
   useEffect(() => {
-    if (restaurantState.loading) {
+    if (partnerState.loading) {
       setLoading(true);
       return;
     }
 
-    if (restaurantState.error) {
+    if (partnerState.error) {
       setLoading(false);
-      Swal.fire("Error!", restaurantState.error, "error");
-    } else if (restaurantState.restaurant) {
-      // Set the restaurant state with the fetched data
-      const fetchedRestaurant = restaurantState.restaurant;
-      setRestaurant({
-        name: fetchedRestaurant.adminId.name || "",
-        email: fetchedRestaurant.adminId.email || "",
-        phone: fetchedRestaurant.adminId.phone || "",
+      Swal.fire("Error!", partnerState.error, "error");
+    } else if (partnerState.partner) {
+      // Set the partner state with the fetched data
+      const fetchedPartner = partnerState.partner;
+      setPartner({
+        name: fetchedPartner.name || "",
+        email: fetchedPartner.email || "",
+        phone: fetchedPartner.phone || "",
         password: "", // Resetting password for security
-        title: fetchedRestaurant.title || "",
-        address: fetchedRestaurant.address || "",
-        city: fetchedRestaurant.city || "",
-        state: fetchedRestaurant.state || "",
-        zipCode: fetchedRestaurant.zipCode || "",
+        title: fetchedPartner.title || "",
+        address: fetchedPartner.address || "",
+        city: fetchedPartner.city || "",
+        state: fetchedPartner.state || "",
+        zipCode: fetchedPartner.zipCode || "",
         image: null, // Resetting image since it will be uploaded again
         avatar: null, // Resetting avatar since it will be uploaded again
       });
-      setImagePreview(fetchedRestaurant.image);
-      setAvatarPreview(fetchedRestaurant.adminId.avatar);
-      setStatus(fetchedRestaurant.status || "Active");
+      setImagePreview(fetchedPartner.image);
+      setAvatarPreview(fetchedPartner.avatar);
+      setStatus(fetchedPartner.status || "Active");
       setLoading(false);
     }
-  }, [restaurantState]);
+  }, [partnerState]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
     if (files) {
       const file = files[0];
-      setRestaurant((prev) => ({
+      setPartner((prev) => ({
         ...prev,
         [name]: file,
       }));
@@ -100,7 +100,7 @@ const EditRestaurant = () => {
         setAvatarPreview(URL.createObjectURL(file));
       }
     } else {
-      setRestaurant((prev) => ({
+      setPartner((prev) => ({
         ...prev,
         [name]: value,
       }));
@@ -126,7 +126,7 @@ const EditRestaurant = () => {
     ];
 
     requiredFields.forEach((field) => {
-      if (!restaurant[field]) {
+      if (!partner[field]) {
         newErrors[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required.`;
         valid = false;
       }
@@ -134,21 +134,21 @@ const EditRestaurant = () => {
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (restaurant.email && !emailRegex.test(restaurant.email)) {
+    if (partner.email && !emailRegex.test(partner.email)) {
       newErrors.email = "Invalid email format.";
       valid = false;
     }
 
     // Phone validation
     const phoneRegex = /^[6789]\d{9}$/; // Indian phone number format
-    if (restaurant.phone && !phoneRegex.test(restaurant.phone)) {
+    if (partner.phone && !phoneRegex.test(partner.phone)) {
       newErrors.phone = "Invalid phone number format. It should be 10 digits starting with 6, 7, 8, or 9.";
       valid = false;
     }
 
     // Zip code validation
     const zipCodeRegex = /^\d{6}$/; // 6 digit zip code
-    if (restaurant.zipCode && !zipCodeRegex.test(restaurant.zipCode)) {
+    if (partner.zipCode && !zipCodeRegex.test(partner.zipCode)) {
       newErrors.zipCode = "Invalid zip code format.";
       valid = false;
     }
@@ -163,20 +163,20 @@ const EditRestaurant = () => {
     if (!validate()) return;
 
     const formData = new FormData();
-    for (const key in restaurant) {
-      formData.append(key, restaurant[key]);
+    for (const key in partner) {
+      formData.append(key, partner[key]);
     }
     formData.append("status", status);
 
-    dispatch(createRestaurant(formData));
+    dispatch(createPartner(formData));
   };
 
   useEffect(() => {
-    if (restaurantState.success) {
-      Swal.fire("Success!", "Restaurant updated successfully!", "success");
-      navigate("/restaurants");
+    if (partnerState.success) {
+      Swal.fire("Success!", "Partner updated successfully!", "success");
+      navigate("/partners");
     }
-  }, [restaurantState.success, navigate]);
+  }, [partnerState.success, navigate]);
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
@@ -185,14 +185,14 @@ const EditRestaurant = () => {
   return (
     <Paper elevation={3} style={{ padding: "20px" }}>
       <Typography variant="h5" gutterBottom align="left">
-        Edit Restaurant
+        Edit Partner
       </Typography>
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6}>
           <TextField
             label="Name"
             name="name"
-            value={restaurant.name}
+            value={partner.name}
             onChange={handleChange}
             variant="outlined"
             fullWidth
@@ -206,7 +206,7 @@ const EditRestaurant = () => {
           <TextField
             label="Email"
             name="email"
-            value={restaurant.email}
+            value={partner.email}
             onChange={handleChange}
             variant="outlined"
             fullWidth
@@ -221,7 +221,7 @@ const EditRestaurant = () => {
             label="Password"
             name="password"
             type={showPassword ? "text" : "password"} // Toggle password visibility
-            value={restaurant.password}
+            value={partner.password}
             onChange={handleChange}
             variant="outlined"
             fullWidth
@@ -272,7 +272,7 @@ const EditRestaurant = () => {
           <TextField
             label="Phone"
             name="phone"
-            value={restaurant.phone}
+            value={partner.phone}
             onChange={handleChange}
             variant="outlined"
             fullWidth
@@ -284,9 +284,9 @@ const EditRestaurant = () => {
 
         <Grid item xs={12} sm={6}>
           <TextField
-            label="Restaurant Name"
+            label="Partner Name"
             name="title"
-            value={restaurant.title}
+            value={partner.title}
             onChange={handleChange}
             variant="outlined"
             fullWidth
@@ -330,7 +330,7 @@ const EditRestaurant = () => {
           <TextField
             label="Address"
             name="address"
-            value={restaurant.address}
+            value={partner.address}
             onChange={handleChange}
             variant="outlined"
             fullWidth
@@ -344,7 +344,7 @@ const EditRestaurant = () => {
           <TextField
             label="City"
             name="city"
-            value={restaurant.city}
+            value={partner.city}
             onChange={handleChange}
             variant="outlined"
             fullWidth
@@ -358,7 +358,7 @@ const EditRestaurant = () => {
           <TextField
             label="State"
             name="state"
-            value={restaurant.state}
+            value={partner.state}
             onChange={handleChange}
             variant="outlined"
             fullWidth
@@ -372,7 +372,7 @@ const EditRestaurant = () => {
           <TextField
             label="Zip Code"
             name="zipCode"
-            value={restaurant.zipCode}
+            value={partner.zipCode}
             onChange={handleChange}
             variant="outlined"
             fullWidth
@@ -411,4 +411,4 @@ const EditRestaurant = () => {
   );
 };
 
-export default EditRestaurant;
+export default EditPartner;

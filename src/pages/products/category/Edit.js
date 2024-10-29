@@ -56,7 +56,7 @@ const EditCategory = () => {
   useEffect(() => {
     if (fetchedCategory) {
       setCategory({ ...fetchedCategory, image: fetchedCategory.image || null });
-      setImagePreview(fetchedCategory.image || null); // Set initial image preview
+      setImagePreview(fetchedCategory.image || null); 
     }
   }, [fetchedCategory]);
 

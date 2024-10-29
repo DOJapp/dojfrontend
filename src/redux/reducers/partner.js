@@ -1,38 +1,38 @@
 import * as actionTypes from "../actionTypes";
 
 const initialState = {
-  restaurants: [],
-  restaurant: null,
+  partners: [],
+  partner: null,
   loading: false,
   success: false, // To track success state
   error: null,
 };
 
-const restaurantReducer = (state = initialState, action) => {
+const partnerReducer = (state = initialState, action) => {
   const { payload, type } = action;
 
   switch (type) {
-    case actionTypes.SET_RESTAURANTS:
+    case actionTypes.SET_PARTNERS:
       return {
         ...state,
-        restaurants: payload,
+        partners: payload,
         loading: false,
         error: null,
-        success: false, // Reset success when fetching restaurants
+        success: false, // Reset success when fetching partners
       };
 
-    case actionTypes.SET_RESTAURANT:
+    case actionTypes.SET_PARTNER:
       return {
         ...state,
-        restaurant: payload,
+        partner: payload,
         loading: false,
         error: null,
-        success: false, // Reset success when fetching a restaurant
+        success: false, // Reset success when fetching a partner
       };
 
-    case actionTypes.CREATE_RESTAURANT:
-    case actionTypes.UPDATE_RESTAURANT:
-    case actionTypes.DELETE_RESTAURANT:
+    case actionTypes.CREATE_PARTNER:
+    case actionTypes.UPDATE_PARTNER:
+    case actionTypes.DELETE_PARTNER:
       return {
         ...state,
         loading: true,
@@ -40,16 +40,16 @@ const restaurantReducer = (state = initialState, action) => {
         success: false, // Reset success when starting a request
       };
 
-    case actionTypes.CREATE_RESTAURANT_SUCCESS:
+    case actionTypes.CREATE_PARTNER_SUCCESS:
       return {
         ...state,
-        restaurants: [...state.restaurants, payload],
+        partners: [...state.partners, payload],
         loading: false,
         error: null,
         success: true, // Indicate success
       };
 
-    case actionTypes.CREATE_RESTAURANT_FAILURE:
+    case actionTypes.CREATE_PARTNER_FAILURE:
       return {
         ...state,
         loading: false,
@@ -57,19 +57,19 @@ const restaurantReducer = (state = initialState, action) => {
         success: false, // Reset success on failure
       };
 
-    case actionTypes.UPDATE_RESTAURANT_SUCCESS:
+    case actionTypes.UPDATE_PARTNER_SUCCESS:
       return {
         ...state,
-        restaurants: state.restaurants.map((restaurant) =>
-          restaurant._id === payload._id ? payload : restaurant
+        partners: state.partners.map((partner) =>
+          partner._id === payload._id ? payload : partner
         ),
-        restaurant: payload,
+        partner: payload,
         loading: false,
         error: null,
         success: true, // Indicate success
       };
 
-    case actionTypes.UPDATE_RESTAURANT_FAILURE:
+    case actionTypes.UPDATE_PARTNER_FAILURE:
       return {
         ...state,
         loading: false,
@@ -77,18 +77,18 @@ const restaurantReducer = (state = initialState, action) => {
         success: false, // Reset success on failure
       };
 
-    case actionTypes.DELETE_RESTAURANT_SUCCESS:
+    case actionTypes.DELETE_PARTNER_SUCCESS:
       return {
         ...state,
-        restaurants: state.restaurants.filter(
-          (restaurant) => restaurant._id !== payload
+        partners: state.partners.filter(
+          (partner) => partner._id !== payload
         ),
         loading: false,
         error: null,
         success: true, // Indicate success
       };
 
-    case actionTypes.DELETE_RESTAURANT_FAILURE:
+    case actionTypes.DELETE_PARTNER_FAILURE:
       return {
         ...state,
         loading: false,
@@ -101,4 +101,4 @@ const restaurantReducer = (state = initialState, action) => {
   }
 };
 
-export default restaurantReducer;
+export default partnerReducer;

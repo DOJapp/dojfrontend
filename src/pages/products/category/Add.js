@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Grid,
   TextField,
@@ -11,10 +11,11 @@ import {
   InputLabel,
   Snackbar,
 } from "@mui/material";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { createCategory } from "../../../redux/Actions/categoryActions"; // Adjust the import path
 import MuiAlert from "@mui/material/Alert";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
+import Swal from "sweetalert2"; // Ensure this is imported if you're using it
 
 const Alert = React.forwardRef((props, ref) => (
   <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />
@@ -22,7 +23,7 @@ const Alert = React.forwardRef((props, ref) => (
 
 const AddCategory = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
   const [category, setCategory] = useState({
     title: "",
     status: "",
@@ -33,20 +34,18 @@ const AddCategory = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [isError, setIsError] = useState(false);
   const [titleError, setTitleError] = useState("");
-  const [statusError, setStatusError] = useState(""); 
-  const [imageError, setImageError] = useState(""); 
+  const [statusError, setStatusError] = useState("");
+  const [imageError, setImageError] = useState("");
+
+  const categoryState = useSelector((state) => state.category); // Get category state from Redux
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
     // Reset error messages when user interacts
-    if (name === "title") {
-      setTitleError("");
-    } else if (name === "status") {
-      setStatusError("");
-    } else if (name === "image") {
-      setImageError("");
-    }
+    if (name === "title") setTitleError("");
+    else if (name === "status") setStatusError("");
+    else if (name === "image") setImageError("");
 
     if (files) {
       const file = files[0];
@@ -84,9 +83,7 @@ const AddCategory = () => {
       hasError = true;
     }
 
-    if (hasError) {
-      return; // Stop submission if there are errors
-    }
+    if (hasError) return; // Stop submission if there are errors
 
     // Prepare form data for submission
     const formData = new FormData();
@@ -95,31 +92,36 @@ const AddCategory = () => {
     formData.append("image", category.image);
 
     try {
-      const result = await dispatch(createCategory(formData));
-      if (result) {
-        setSnackbarMessage("Category added successfully!");
-        setIsError(false);
-        setCategory({ title: "", status: "", image: null });
-        setImagePreview(null);
-        
-        navigate('/category'); 
-      } else {
-        setSnackbarMessage("Failed to add category.");
-        setIsError(true);
-      }
+      await dispatch(createCategory(formData));
     } catch (error) {
-      setSnackbarMessage(error.message);
+      setSnackbarMessage("Failed to add category.");
       setIsError(true);
+      setOpenSnackbar(true);
     }
-    setOpenSnackbar(true);
   };
+
+  useEffect(() => {
+    if (categoryState.loading) return;
+
+    if (categoryState.error) {
+      Swal.fire("Error!", categoryState.error, "error");
+    } else if (categoryState.success) {
+      setSnackbarMessage("Category added successfully!");
+      setIsError(false);
+      setOpenSnackbar(true);
+      // Reset form after successful submission
+      setCategory({ title: "", status: "", image: null });
+      setImagePreview(null);
+      navigate("/category"); // Navigate after success
+    }
+  }, [categoryState, navigate]);
 
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
   };
 
   const isFormValid = () => {
-    return category.title && category.status && category.image; // Check if all fields are filled
+    return category.title && category.status && category.image;
   };
 
   return (
@@ -137,8 +139,8 @@ const AddCategory = () => {
             variant="outlined"
             fullWidth
             required
-            error={!!titleError} 
-            helperText={titleError} 
+            error={!!titleError}
+            helperText={titleError}
           />
         </Grid>
 
@@ -151,11 +153,11 @@ const AddCategory = () => {
               value={category.status}
               onChange={handleChange}
             >
-              <MenuItem value="">Select Status</MenuItem> 
+              <MenuItem value="">Select Status</MenuItem>
               <MenuItem value="Active">Active</MenuItem>
-              <MenuItem value="Block">Blocked</MenuItem>
+              <MenuItem value="Blocked">Blocked</MenuItem>
             </Select>
-            {statusError && <p style={{ color: 'red', margin: '4px 0 0 0' }}>{statusError}</p>} 
+            {statusError && <p style={{ color: 'red', margin: '4px 0 0 0' }}>{statusError}</p>}
           </FormControl>
         </Grid>
 
@@ -175,18 +177,22 @@ const AddCategory = () => {
           {imagePreview && (
             <Grid item xs={4}>
               <div className="image-preview" style={{ textAlign: "center" }}>
-                <img src={imagePreview} alt="Preview" style={{ width: "100%", height: "auto" }} />
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  style={{ width: "100%", height: "auto" }}
+                />
               </div>
             </Grid>
           )}
         </Grid>
-        {imageError && <p style={{ color: 'red', margin: '4px 0 0 0' }}>{imageError}</p>} 
+        {imageError && <p style={{ color: 'red', margin: '4px 0 0 0' }}>{imageError}</p>}
 
         <Grid item xs={12} container justifyContent="center">
-          <Button 
-            variant="contained" 
-            color="primary" 
-            onClick={handleSubmit} 
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSubmit}
             disabled={!isFormValid()} // Disable button if form is invalid
           >
             Add Category

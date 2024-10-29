@@ -25,9 +25,9 @@ import ProductAdd from "./pages/products/AddProduct.js";
 import EditProduct from "./pages/products/EditProduct.js";
 
 // restaurant
-import RestaurantList from "./pages/restaurant/List.js";
-import RestaurantAdd from "./pages/restaurant/Add.js";
-import EditRestaurant from "./pages/restaurant/Edit.js";
+import PartnersList from "./pages/partners/List.js";
+import PartnersAdd from "./pages/partners/Add.js";
+import EditPartners from "./pages/partners/Edit.js";
 
 // tags
 import TagList from "./pages/tags/List.js";
@@ -65,10 +65,10 @@ function App() {
           <Route path="/products/add" element={<ProductAdd />} />
           <Route path="/products/edit/:id" element={<EditProduct />} />
 
-          {/* restaurants Routes */}
-          <Route path="/restaurants" element={<RestaurantList />} />
-          <Route path="/restaurants/add" element={<RestaurantAdd />} />
-          <Route path="/restaurants/edit/:id" element={<EditRestaurant />} />
+          {/* Partners Routes */}
+          <Route path="/partners" element={<PartnersList />} />
+          <Route path="/partners/add" element={<PartnersAdd />} />
+          <Route path="/partners/edit/:id" element={<EditPartners />} />
 
           {/* Banner Routes */}
           <Route path="/banner" element={<BannerList />} />

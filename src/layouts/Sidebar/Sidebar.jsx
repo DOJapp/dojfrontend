@@ -37,6 +37,23 @@ const routes = [
     ],
   },
   {
+    path: "/tags",
+    name: "Tag",
+    icon: <BiAbacus />,
+    subRoutes: [
+      {
+        path: "/tags",
+        name: "List",
+        icon: <BiAbacus />,
+      },
+      {
+        path: "/tags/add",
+        name: "Add Tags",
+        icon: <BiAbacus />,
+      },
+    ],
+  },
+  {
     path: "/products",
     name: "Products",
     icon: <BiAbacus />,
@@ -54,17 +71,17 @@ const routes = [
     ],
   },
   {
-    path: "/restaurants",
-    name: "Restaurants",
+    path: "/partners",
+    name: "Partners",
     icon: <BiAbacus />,
     subRoutes: [
       {
-        path: "/restaurants", // This route will show the list of products
+        path: "/partners", 
         name: "List",
         icon: <BiAbacus />,
       },
       {
-        path: "/restaurants/add", // This route will show the add product form
+        path: "/partners/add", 
         name: "Add",
         icon: <BiAbacus />,
       },

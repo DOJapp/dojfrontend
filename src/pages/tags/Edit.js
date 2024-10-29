@@ -1,170 +1,121 @@
 import React, { useState, useEffect } from "react";
-import { useStyles } from "../../assets/styles.js";
 import {
+  Grid,
+  TextField,
+  Button,
+  Paper,
+  Typography,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
-  Grid,
-  Button,
-  TextField,
 } from "@mui/material";
-import List from "@mui/icons-material/List";
-import { useNavigate, useParams } from "react-router-dom";
-import Loader from "../../Components/loading/Loader.js";
+import { useDispatch, useSelector } from "react-redux";
+import { getTagById, updateTag } from "../../redux/Actions/tagsActions"; // Assume you have these actions
+import { useParams } from "react-router-dom";
 import Swal from "sweetalert2";
-import { connect } from "react-redux";
-import { getTagById, updateTag } from "../../redux/Actions/tagsActions.js";
+import { useNavigate } from "react-router-dom";
 
-const Edit = ({ dispatch }) => {
+const EditTags = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { id } = useParams(); // Get the tag ID from URL parameters
-  const classes = useStyles();
-  const [title, setTitle] = useState("");
-  const [status, setStatus] = useState("Active");
-  const [error, setError] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
+
+  const tagsState = useSelector((state) => state.tag); // Assuming you have a tags reducer
+  const { id } = useParams();
+
+  const [title, setTitle] = useState(""); // State for title
+  const [status, setStatus] = useState("Active"); // State for status
+  const [errors, setErrors] = useState({ title: "" });
 
   useEffect(() => {
-    const fetchTag = async () => {
-      try {
-        const tag = await dispatch(getTagById(id)); // Fetch the tag by ID
-        setTitle(tag.title);
-        setStatus(tag.status);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching tag:", error);
-        Swal.fire("Error!", "Failed to fetch tag data.", "error");
-      }
-    };
-
-    fetchTag();
+    // Fetch existing tag if editing
+    if (id) {
+      dispatch(getTagById(id));
+    }
   }, [dispatch, id]);
 
-  const handleError = (input, value) => {
-    setError((prev) => ({ ...prev, [input]: value }));
-  };
+  useEffect(() => {
+    // Populate the fields if fetched from the state
+    if (tagsState.selectedTag) {
+      setTitle(tagsState.selectedTag.title); // Correctly accessing selectedTag
+      setStatus(tagsState.selectedTag.status || "Active"); // Set default status if not present
+    }
+  }, [tagsState.selectedTag]);
 
-  const validation = () => {
-    let isValid = true;
+  const validate = () => {
+    let valid = true;
+    const newErrors = { title: "" };
 
     if (!title) {
-      handleError("title", "Title is required");
-      isValid = false;
-    } else {
-      handleError("title", "");
+      newErrors.title = "Title is required.";
+      valid = false;
     }
 
-    return isValid;
+    setErrors(newErrors);
+    return valid;
   };
 
-  const handleSubmit = async () => {
-    if (validation()) {
-      setIsLoading(true);
+  const handleSubmit = () => {
+    setErrors({ title: "" });
 
-      // Prepare the form data for updating
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("status", status);
+    if (!validate()) return;
 
-      try {
-        // Dispatch the action to update the tag
-        await dispatch(updateTag(id, formData));
+    const tagsData = { title, status }; // Prepare data for update
+    dispatch(updateTag(id, tagsData)); // Dispatch action to update tag
+  };
 
-        // Show success message
-        Swal.fire("Success!", "Tag updated successfully!", "success");
+  useEffect(() => {
+    if (tagsState.loading) return;
 
-        // Navigate to tags list
-        navigate("/tags");
-      } catch (error) {
-        console.error("Error updating tag:", error);
-        Swal.fire("Error!", "Failed to update tag.", "error");
-      } finally {
-        setIsLoading(false);
-      }
+    if (tagsState.error) {
+      Swal.fire("Error!", tagsState.error, "error");
+    } else if (tagsState.success) {
+      setTitle("");
+      setStatus("Active"); 
+      navigate('/tags');
     }
-  };
-
-  const handleReset = () => {
-    setTitle("");
-    setStatus("Active");
-    setError({});
-  };
+  }, [tagsState]);
 
   return (
-    <div className={classes.container}>
-      <div className={classes.box}>
-        {isLoading && <Loader />}
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <div className={classes.headingContainer}>
-              <div className={classes.heading}>Edit Tag</div>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={() => navigate("/tags")}
-                className={classes.addButtontext}
-              >
-                <List /> Display Tags
-              </Button>
-            </div>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <TextField
-              label="Title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              variant="outlined"
-              fullWidth
-              required
-              error={!!error.title}
-              helperText={error.title}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <FormControl fullWidth variant="outlined" required>
-              <InputLabel>Status</InputLabel>
-              <Select
-                label="Status"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-              >
-                <MenuItem value="Active">Active</MenuItem>
-                <MenuItem value="Blocked">Blocked</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Grid item xs={12} container justifyContent="center" spacing={2}>
-            <Grid item>
-              <Button
-                onClick={handleSubmit}
-                disabled={isLoading}
-                variant="contained"
-                color="primary"
-              >
-                Submit
-              </Button>
-            </Grid>
-
-            <Grid item>
-              <Button
-                onClick={handleReset}
-                variant="outlined"
-                color="secondary"
-              >
-                Reset
-              </Button>
-            </Grid>
-          </Grid>
+    <Paper elevation={3} style={{ padding: "20px" }}>
+      <Typography variant="h5" gutterBottom align="left">
+        Edit Tags
+      </Typography>
+      <Grid container spacing={2}>
+        <Grid item xs={6}>
+          <TextField
+            label="Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            variant="outlined"
+            fullWidth
+            error={!!errors.title}
+            helperText={errors.title}
+          />
         </Grid>
-      </div>
-    </div>
+
+        <Grid item xs={6}>
+          <FormControl fullWidth variant="outlined" required>
+            <InputLabel>Status</InputLabel>
+            <Select
+              label="Status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              <MenuItem value="Active">Active</MenuItem>
+              <MenuItem value="Blocked">Blocked</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+
+        <Grid item xs={12} container justifyContent="center">
+          <Button variant="contained" color="primary" onClick={handleSubmit}>
+            Update Tags
+          </Button>
+        </Grid>
+      </Grid>
+    </Paper>
   );
 };
 
-const mapDispatchToProps = (dispatch) => ({ dispatch });
-
-export default connect(null, mapDispatchToProps)(Edit);
+export default EditTags;

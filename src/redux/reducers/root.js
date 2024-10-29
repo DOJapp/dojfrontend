@@ -6,15 +6,16 @@ import errorReducer from "./errorSlice";
 import authReducer from "./auth";
 import category from "./category";
 import product from "./product";
-import restaurant from "./restaurant";
-
+import partner from "./partner";
+import tag from "./tag";
 const rootReducer = combineReducers({
   dashboard,
   customer,
   banner,
   category,
   product,
-  restaurant,
+  partner,
+  tag,
   error: errorReducer,
   auth: authReducer,
 });

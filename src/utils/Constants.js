@@ -18,8 +18,11 @@ export const banner="admin/banner";
 // products 
 export const products="admin/products";
 
-// restaurants 
-export const restaurants="admin/restaurants";
+// partners 
+export const partners="admin/partners";
+
+// tags 
+export const tags="admin/tags";
 
 
 //Customer
