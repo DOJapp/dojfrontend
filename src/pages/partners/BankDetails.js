@@ -1,85 +1,64 @@
 import React from "react";
 import {
   Grid,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Typography,
+  TextField
 } from "@mui/material";
 
-const BankDetails = ({
-  bankName,
-  setBankName,
-  accountNumber,
-  setAccountNumber,
-  ifscCode,
-  setIfscCode,
-  accountHolderName,
-  setAccountHolderName,
-  accountType,
-  setAccountType,
-}) => {
-  return (
-    <>
-      <Typography variant="h6" gutterBottom>
-        Bank Details
-      </Typography>
-      <Grid container spacing={2}>
-        <Grid item xs={12} md={6}>
-          <TextField
-            label="Bank Name"
-            variant="outlined"
-            fullWidth
-            value={bankName}
-            onChange={(e) => setBankName(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <TextField
-            label="Account Number"
-            variant="outlined"
-            fullWidth
-            value={accountNumber}
-            onChange={(e) => setAccountNumber(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <TextField
-            label="IFSC Code"
-            variant="outlined"
-            fullWidth
-            value={ifscCode}
-            onChange={(e) => setIfscCode(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <TextField
-            label="Account Holder Name"
-            variant="outlined"
-            fullWidth
-            value={accountHolderName}
-            onChange={(e) => setAccountHolderName(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <FormControl fullWidth variant="outlined">
-            <InputLabel>Account Type</InputLabel>
-            <Select
-              label="Account Type"
-              value={accountType}
-              onChange={(e) => setAccountType(e.target.value)}
-            >
-              <MenuItem value="Savings">Savings</MenuItem>
-              <MenuItem value="Current">Current</MenuItem>
-              <MenuItem value="Fixed Deposit">Fixed Deposit</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-      </Grid>
-    </>
-  );
-};
+// Bank details component
+const BankDetails = ({ partner, handleBankDetailsChange }) => (
+  <>
+  
+    <Grid item xs={12}>
+      <Typography variant="h6">Bank Details</Typography>
+    </Grid>
+    <Grid item xs={12} md={6}>
+      <TextField
+        label="Bank Name"
+        variant="outlined"
+        required
+        fullWidth
+        name="bankName"
+        value={partner.bankName || ""}
+        onChange={(e) => handleBankDetailsChange(e, "bankName", partner.index, true)}
+      />
+    </Grid>
+    <Grid item xs={12} md={6}>
+      <TextField
+        label="Account Number"
+        variant="outlined"
+        required
+        fullWidth
+        name="accountNumber"
+        value={partner.accountNumber || ""}
+        onChange={(e) =>
+          handleBankDetailsChange(e, "accountNumber", partner.index, true)
+        }
+      />
+    </Grid>
+    <Grid item xs={12} md={6}>
+      <TextField
+        label="IFSC Code"
+        variant="outlined"
+        fullWidth
+        name="ifscCode"
+        value={partner.ifscCode || ""}
+        onChange={(e) => handleBankDetailsChange(e, "ifscCode", partner.index, true)}
+      />
+    </Grid>
+    <Grid item xs={12} md={6}>
+      <TextField
+        label="Account Holder Name"
+        variant="outlined"
+        fullWidth
+        name="accountHolderName"
+        value={partner.accountHolderName || ""}
+        onChange={(e) =>
+          handleBankDetailsChange(e, "accountHolderName", partner.index, true)
+        }
+      />
+    </Grid>
+  </>
+);
 
 export default BankDetails;

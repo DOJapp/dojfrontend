@@ -1,194 +1,327 @@
 import React, { useState } from "react";
 import {
   Grid,
-  TextField,
-  Button,
   Paper,
   Typography,
   FormControl,
   InputLabel,
-  Avatar,
   Select,
   MenuItem,
+  Button,
+  TextField,
+  Avatar,
+  Divider,
 } from "@mui/material";
-import WithoutGst from "./WithoutGst";
-import Propriter from "./Propriter";
-import PartnerShip from "./PartnerShip";
-import Llp from "./Llp";
-import PvtLtd from "./PvtLtd";
-import Limited from "./Limited";
+import AddIcon from "@mui/icons-material/Add";
+import axios from "axios";
+import FileUpload from "../../Components/FileUpload";
+import BankDetails from "./BankDetails.js";
 
+// Partner Details Component
+const PartnerDetails = ({ partner, handleFileChange, onRemove }) => {
+  return (
+    <Grid item xs={12}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Typography variant="h6" gutterBottom>{`Partner ${
+          partner.index + 1
+        }`}</Typography>
+        {partner.index !== 0 && (
+          <Button
+            variant="contained"
+            color="secondary"
+            size="small"
+            onClick={onRemove}
+          >
+            Remove
+          </Button>
+        )}
+      </div>
+      <Divider style={{ marginBottom: "10px" }} />
+      <Grid container spacing={2}>
+        <Grid item xs={6}>
+          <TextField
+            label="PAN Number"
+            variant="outlined"
+            required
+            fullWidth
+            name="panNumber"
+            value={partner.panNumber || ""}
+            onChange={(e) =>
+              handleFileChange(e, "panNumber", partner.index, true)
+            }
+          />
+        </Grid>
+        <FileUpload
+          label="Upload PAN Image"
+          onChange={(e) => handleFileChange(e, "panImage", partner.index)}
+          preview={partner.panImage}
+        />
+        <Grid item xs={6}>
+          <TextField
+            label="Aadhar Number"
+            variant="outlined"
+            required
+            fullWidth
+            name="aadharNumber"
+            value={partner.aadharNumber || ""}
+            onChange={(e) =>
+              handleFileChange(e, "aadharNumber", partner.index, true)
+            }
+          />
+        </Grid>
+        <FileUpload
+          label="Upload Aadhar Front Image"
+          onChange={(e) => handleFileChange(e, "aadharImage", partner.index)}
+          preview={partner.aadharImage}
+        />
+        <FileUpload
+          label="Upload Aadhar Back Image"
+          onChange={(e) =>
+            handleFileChange(e, "aadharBackImage", partner.index)
+          }
+          preview={partner.aadharBackImage}
+        />
+        <Grid item xs={12}>
+          <Typography variant="h6">Bank Details</Typography>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <TextField
+            label="Bank Name"
+            variant="outlined"
+            required
+            fullWidth
+            name="bankName"
+            value={partner.bankName || ""}
+            onChange={(e) =>
+              handleFileChange(e, "bankName", partner.index, true)
+            }
+          />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <TextField
+            label="Account Number"
+            variant="outlined"
+            required
+            fullWidth
+            name="accountNumber"
+            value={partner.accountNumber || ""}
+            onChange={(e) =>
+              handleFileChange(e, "accountNumber", partner.index, true)
+            }
+          />
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <TextField
+            label="IFSC Code"
+            variant="outlined"
+            fullWidth
+            name="ifscCode"
+            value={partner.ifscCode || ""}
+            onChange={(e) =>
+              handleFileChange(e, "ifscCode", partner.index, true)
+            }
+          />
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <TextField
+            label="Account Holder Name"
+            variant="outlined"
+            fullWidth
+            name="accountHolderName"
+            value={partner.accountHolderName || ""}
+            onChange={(e) =>
+              handleFileChange(e, "accountHolderName", partner.index, true)
+            }
+          />
+        </Grid>
+      </Grid>
+    </Grid>
+  );
+};
+
+// Main AddPartner Component
 const AddPartner = () => {
-  const [gstSelected, setGstSelected] = useState("");
-  const [firmType, setFirmType] = useState("");
-  const [avatarPreview, setAvatarPreview] = useState(null);
-  const [errors, setErrors] = useState({});
-
-  // State for firm details without GST
-  const [firmDetailsWithoutGst, setFirmDetailsWithoutGst] = useState({
-    panNumber: "",
+  const [companyDetails, setCompanyDetails] = useState({
+    gstSelected: "No",
+    companyPanNumber: "",
+    companyPanImage: null,
     aadharNumber: "",
+    aadharImage: null,
+    aadharBackImage: null,
     firmName: "",
     firmAddress: "",
-    bankDetails: {
-      bankName: "",
-      accountNumber: "",
-      ifscCode: "",
-      accountHolderName: "",
-      accountType: "",
-    },
-  });
-  console.log("firmDetailsWithoutGst", firmDetailsWithoutGst);
-
-  // State for firm details with GST
-  const [firmDetailsWithGst, setFirmDetailsWithGst] = useState({
-    gstFirmName: "",
-    gstNumber: "",
-    address: "",
+    bankName: "",
+    accountNumber: "",
+    ifscCode: "",
+    accountHolderName: "",
+    gstNo: "",
     composition: "",
-    panNumber: "",
-    aadharNumber: "",
-    bankDetails: {
-      bankName: "",
-      accountNumber: "",
-      ifscCode: "",
-      accountHolderName: "",
-      accountType: "",
-    },
-  });
-  const [firmDetailsWithGstWithParther, setFirmDetailsWithGstWithParther] =
-    useState({
-      gstFirmName: "",
-      gstNumber: "",
-      address: "",
-      composition: "",
-      panNumber: "",
-      aadharNumber: "",
-      bankDetails: {
+    firmType: "",
+    cinNo: "",
+    partners: [
+      {
+        panNumber: "",
+        panImage: null,
+        aadharNumber: "",
+        aadharImage: null,
+        aadharBackImage: null,
         bankName: "",
         accountNumber: "",
         ifscCode: "",
         accountHolderName: "",
-        accountType: "",
       },
-      partherDetails: [
-        {
-          panNumber: "",
-          aadharNumber: "",
-          bankDetails: {
-            bankName: "",
-            accountNumber: "",
-            ifscCode: "",
-            accountHolderName: "",
-            accountType: "",
-          },
-        },
-      ],
-    });
+    ],
+  });
 
-  console.log("firmDetailsWithGst", firmDetailsWithGst);
+  console.log("companyDetails", companyDetails);
 
-  const handleFirmDetailsChangeWithoutGst = (field, value) => {
-    setFirmDetailsWithoutGst((prevDetails) => ({
-      ...prevDetails,
-      [field]: value,
-    }));
-  };
-
-  const handleFirmDetailsChangeWithGst = (field, value) => {
-    setFirmDetailsWithGst((prevDetails) => ({
-      ...prevDetails,
-      [field]: value,
-    }));
-  };
-
+  // Handle GST selection change
   const handleGstChange = (event) => {
-    const value = event.target.value;
-    setGstSelected(value);
-    setFirmType(""); // Reset firm type when GST changes
-
-    // Reset firm details based on GST selection
-    if (value === "No") {
-      setFirmDetailsWithGst({
-        gstFirmName: "",
-        gstNumber: "",
-        address: "",
-        composition: "",
-        panNumber: "",
-        aadharNumber: "",
-        bankDetails: {
-          bankName: "",
-          accountNumber: "",
-          ifscCode: "",
-          accountHolderName: "",
-          accountType: "",
-        },
-      });
-    } else {
-      setFirmDetailsWithoutGst({
-        panNumber: "",
-        aadharNumber: "",
-        firmName: "",
-        firmAddress: "",
-        bankDetails: {
-          bankName: "",
-          accountNumber: "",
-          ifscCode: "",
-          accountHolderName: "",
-          accountType: "",
-        },
-      });
-    }
+    setCompanyDetails({ ...companyDetails, gstSelected: event.target.value });
+  };
+  // Handle GST selection change
+  const handleFrimTypeChange = (event) => {
+    setCompanyDetails({ ...companyDetails, firmType: event.target.value });
   };
 
-  const handleFirmTypeChange = (event) => {
-    setFirmType(event.target.value);
-  };
+  // Handle input changes
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
 
-  const handleAvatarChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setAvatarPreview(URL.createObjectURL(file));
-      setErrors((prev) => ({ ...prev, avatar: "" }));
-    }
-  };
-
-  const handleFileChange = (field, file) => {
-    setFirmDetailsWithGst((prevDetails) => ({
+    setCompanyDetails((prevDetails) => ({
       ...prevDetails,
-      [field]: file,
+      [name]: value,
     }));
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!gstSelected) newErrors.gstSelected = "GST selection is required.";
-    if (gstSelected === "Yes" && !avatarPreview) {
-      newErrors.avatar = "Avatar upload is required.";
+  // Handle file changes
+  const handleFileChange = (event, name, index, isText = false) => {
+    const value = isText ? event.target.value : event.target.files[0];
+
+    if (!isText && value) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCompanyDetails((prevDetails) => {
+          const updatedPartners = [...prevDetails.partners];
+          // Check if index is provided for partners
+          if (index !== undefined) {
+            updatedPartners[index][name] = reader.result; // Update partner's image
+          } else {
+            prevDetails[name] = reader.result; // Update company image
+          }
+          return { ...prevDetails, partners: updatedPartners };
+        });
+      };
+      reader.readAsDataURL(value);
+    } else {
+      setCompanyDetails((prevDetails) => {
+        const updatedPartners = [...prevDetails.partners];
+        // Check if index is provided for partners
+        if (index !== undefined) {
+          updatedPartners[index][name] = value; // Update partner's text field
+        } else {
+          prevDetails[name] = value; // Update company text field
+        }
+        return { ...prevDetails, partners: updatedPartners };
+      });
     }
-    if (firmType === "Propriter" && gstSelected === "Yes") {
-      if (!firmDetailsWithGst.panImage)
-        newErrors.panImage = "PAN image is required.";
-      if (!firmDetailsWithGst.aadharFrontImage)
-        newErrors.aadharFrontImage = "Aadhar front image is required.";
-      if (!firmDetailsWithGst.aadharBackImage)
-        newErrors.aadharBackImage = "Aadhar back image is required.";
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
-    if (validateForm()) {
-      const submissionData = {
-        gstSelected,
-        ...(gstSelected === "Yes"
-          ? { firmType, firmDetails: firmDetailsWithGst, avatarPreview }
-          : { firmDetails: firmDetailsWithoutGst }),
-      };
-      console.log("Submission Data:", submissionData);
-      // Reset the form or handle submission here
+  const handleBankDetailsChange = (event, fieldName, index) => {
+    const { name, value } = event.target;
+
+    setCompanyDetails((prevDetails) => ({
+      ...prevDetails,
+      [name]: value,
+    }));
+  };
+
+  // Handle form submission
+  const handleSubmit = async () => {
+    try {
+      let formData;
+      if (companyDetails.gstSelected === "No") {
+        // Prepare data for GST "No"
+        formData = {
+          gstSelected: companyDetails.gstSelected,
+          companyPanNumber: companyDetails.companyPanNumber,
+          companyPanImage: companyDetails.companyPanImage,
+          aadharNumber: companyDetails.aadharNumber,
+          aadharImage: companyDetails.aadharImage,
+          aadharBackImage: companyDetails.aadharBackImage,
+          firmName: companyDetails.firmName,
+          firmAddress: companyDetails.firmAddress,
+          bankName: companyDetails.bankName,
+          accountNumber: companyDetails.accountNumber,
+          ifscCode: companyDetails.ifscCode,
+          accountHolderName: companyDetails.accountHolderName,
+        };
+      } else {
+        // Prepare data for GST "Yes"
+        formData = {
+          gstSelected: companyDetails.gstSelected,
+          gstNo: companyDetails.gstNo,
+          firmName: companyDetails.firmName,
+          firmAddress: companyDetails.firmAddress,
+          composition: companyDetails.composition,
+          firmType: companyDetails.firmType,
+          cinNo: companyDetails.cinNo,
+          companyPanNumber: companyDetails.companyPanNumber,
+          companyPanImage: companyDetails.companyPanImage,
+          aadharNumber: companyDetails.aadharNumber,
+          aadharImage: companyDetails.aadharImage,
+          aadharBackImage: companyDetails.aadharBackImage,
+          bankName: companyDetails.bankName,
+          accountNumber: companyDetails.accountNumber,
+          ifscCode: companyDetails.ifscCode,
+          accountHolderName: companyDetails.accountHolderName,
+          partners: companyDetails.partners,
+        };
+      }
+      // Send formData to API
+      const response = await axios.post("/api/company", formData);
+      console.log(response);
+    } catch (error) {
+      console.error(error);
     }
+  };
+
+  // Handle add partner
+  const handleAddPartner = () => {
+    setCompanyDetails((prevDetails) => {
+      const newPartner = {
+        panNumber: "",
+        panImage: null,
+        aadharNumber: "",
+        aadharImage: null,
+        aadharBackImage: null,
+        bankName: "",
+        accountNumber: "",
+        ifscCode: "",
+        accountHolderName: "",
+      };
+      return {
+        ...prevDetails,
+        partners: [...prevDetails.partners, newPartner],
+      };
+    });
+  };
+
+  // Handle remove partner
+  const handleRemovePartner = (index) => {
+    setCompanyDetails((prevDetails) => {
+      const updatedPartners = [...prevDetails.partners];
+      updatedPartners.splice(index, 1);
+      return { ...prevDetails, partners: updatedPartners };
+    });
   };
 
   return (
@@ -200,39 +333,120 @@ const AddPartner = () => {
         <Grid item xs={12} md={6}>
           <FormControl fullWidth variant="outlined" required>
             <InputLabel>GST</InputLabel>
-            <Select label="GST" value={gstSelected} onChange={handleGstChange}>
+            <Select
+              label="GST"
+              value={companyDetails.gstSelected}
+              onChange={handleGstChange}
+            >
               <MenuItem value="Yes">Yes</MenuItem>
               <MenuItem value="No">No</MenuItem>
             </Select>
           </FormControl>
         </Grid>
 
-        {gstSelected === "No" && (
-          <WithoutGst
-            firmDetails={firmDetailsWithoutGst}
-            onFirmDetailChange={handleFirmDetailsChangeWithoutGst}
-            onBankDetailChange={(field, value) =>
-              setFirmDetailsWithoutGst((prevDetails) => ({
-                ...prevDetails,
-                bankDetails: { ...prevDetails.bankDetails, [field]: value },
-              }))
-            }
-          />
-        )}
-
-        {gstSelected === "Yes" && (
+        {companyDetails.gstSelected === "No" && (
           <>
+            <Grid item xs={12}>
+              <Typography variant="h6">Firm Details</Typography>
+            </Grid>
             <Grid item xs={12} md={6}>
               <TextField
-                label="GST Firm Name"
+                label="PAN Number"
+                variant="outlined"
+                name="companyPanNumber"
+                required
+                fullWidth
+                value={companyDetails.companyPanNumber || ""}
+                onChange={handleInputChange}
+              />
+            </Grid>
+            <FileUpload
+              label="Upload PAN Image"
+              onChange={(e) => handleFileChange(e, "companyPanImage")}
+              preview={companyDetails.companyPanImage}
+            />
+            <Grid item xs={12} md={6}>
+              <TextField
+                label="Aadhar Number"
                 variant="outlined"
                 required
                 fullWidth
-                value={firmDetailsWithGst.gstFirmName}
-                onChange={(e) =>
-                  handleFirmDetailsChangeWithGst("gstFirmName", e.target.value)
-                }
+                name="aadharNumber"
+                value={companyDetails.aadharNumber || ""}
+                onChange={handleInputChange}
               />
+            </Grid>
+            <FileUpload
+              label="Upload Aadhar Front Image"
+              onChange={(e) => handleFileChange(e, "aadharImage")}
+              preview={companyDetails.aadharImage}
+            />
+            <FileUpload
+              label="Upload Aadhar Back Image"
+              onChange={(e) => handleFileChange(e, "aadharBackImage")}
+              preview={companyDetails.aadharBackImage}
+            />
+            <Grid item xs={12} md={6}>
+              <TextField
+                label="Firm Name"
+                variant="outlined"
+                required
+                fullWidth
+                name="firmName"
+                value={companyDetails.firmName || ""}
+                onChange={handleInputChange}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                label="Firm Address"
+                variant="outlined"
+                required
+                fullWidth
+                name="firmAddress"
+                value={companyDetails.firmAddress || ""}
+                onChange={handleInputChange}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Button
+                variant="contained"
+                component="label"
+                fullWidth
+                style={{ backgroundColor: "#3 f51b5", color: "#fff" }}
+              >
+                Upload Document
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files);
+                    const previews = files.map((file) =>
+                      URL.createObjectURL(file)
+                    );
+                    setCompanyDetails((prevDetails) => ({
+                      ...prevDetails,
+                      documentImages: previews,
+                    }));
+                  }}
+                />
+              </Button>
+            </Grid>
+            <BankDetails
+              partner={companyDetails}
+              handleBankDetailsChange={handleBankDetailsChange}
+            />
+          </>
+        )}
+
+        {companyDetails.gstSelected === "Yes" && (
+          <>
+            <Grid item xs={12}>
+              <Typography variant="h5" component="h2" gutterBottom>
+                GST Details
+              </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
               <TextField
@@ -240,22 +454,31 @@ const AddPartner = () => {
                 variant="outlined"
                 required
                 fullWidth
-                value={firmDetailsWithGst.gstNumber}
-                onChange={(e) =>
-                  handleFirmDetailsChangeWithGst("gstNumber", e.target.value)
-                }
+                name="gstNo"
+                value={companyDetails.gstNo || ""}
+                onChange={handleInputChange}
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <TextField
-                label="Address"
+                label="Firm Name"
                 variant="outlined"
                 required
                 fullWidth
-                value={firmDetailsWithGst.address}
-                onChange={(e) =>
-                  handleFirmDetailsChangeWithGst("address", e.target.value)
-                }
+                name="firmName"
+                value={companyDetails.firmName || ""}
+                onChange={handleInputChange}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                label="Firm Address"
+                variant="outlined"
+                required
+                fullWidth
+                name="firmAddress"
+                value={companyDetails.firmAddress || ""}
+                onChange={handleInputChange}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -264,49 +487,24 @@ const AddPartner = () => {
                 variant="outlined"
                 required
                 fullWidth
-                value={firmDetailsWithGst.composition}
-                onChange={(e) =>
-                  handleFirmDetailsChangeWithGst("composition", e.target.value)
-                }
+                name="composition"
+                value={companyDetails.composition || ""}
+                onChange={handleInputChange}
               />
             </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FormControl
-                required
-                fullWidth
-                variant="outlined"
-                error={!!errors.avatar}
-              >
-                <Button variant="outlined" component="label" fullWidth>
-                  Upload Avatar
-                  <input
-                    type="file"
-                    hidden
-                    accept="image/*"
-                    onChange={handleAvatarChange}
-                  />
-                </Button>
-                {errors.avatar && (
-                  <p style={{ color: "red" }}>{errors.avatar}</p>
-                )}
-              </FormControl>
-              {avatarPreview && (
-                <Avatar
-                  alt="Avatar Preview"
-                  src={avatarPreview}
-                  style={{ width: "50px", height: "50px" }}
-                />
-              )}
+            <Grid item xs={12}>
+              <Typography variant="h5" component="h2" gutterBottom>
+                Firm Details
+              </Typography>
             </Grid>
-
             <Grid item xs={12} md={6}>
               <FormControl fullWidth variant="outlined" required>
-                <InputLabel>Firm Type</InputLabel>
+                <InputLabel id="firm-type-label">Firm Type</InputLabel>
                 <Select
+                  labelId="firm-type-label"
                   label="Firm Type"
-                  value={firmType}
-                  onChange={handleFirmTypeChange}
+                  value={companyDetails.firmType || ""}
+                  onChange={handleFrimTypeChange}
                 >
                   <MenuItem value="Propriter">Propriter</MenuItem>
                   <MenuItem value="Partnership">Partnership</MenuItem>
@@ -317,70 +515,142 @@ const AddPartner = () => {
               </FormControl>
             </Grid>
 
-            {firmType === "Propriter" && (
-              <Propriter
-                firmDetails={firmDetailsWithGst}
-                onFirmDetailChange={handleFirmDetailsChangeWithGst}
-                onBankDetailChange={(field, value) =>
-                  setFirmDetailsWithGst((prevDetails) => ({
-                    ...prevDetails,
-                    bankDetails: { ...prevDetails.bankDetails, [field]: value },
-                  }))
-                }
-                onFileChange={handleFileChange}
+            <Grid item xs={6}>
+              <TextField
+                label="Company PAN Number"
+                variant="outlined"
+                required
+                fullWidth
+                name="companyPanNumber"
+                value={companyDetails.companyPanNumber || ""}
+                onChange={handleInputChange}
               />
-            )}
-            {firmType === "Partnership" && (
-              <PartnerShip
-                firmDetails={firmDetailsWithGstWithParther}
-                onFirmDetailChange={handleFirmDetailsChangeWithGst}
-                onBankDetailChange={(field, value) =>
-                  setFirmDetailsWithGstWithParther((prevDetails) => ({
-                    ...prevDetails,
-                    bankDetails: {
-                      ...prevDetails.bankDetails,
-                      [field]: value,
-                    },
-                  }))
-                }
-                onPartnerDetailChange={(index, field, value) =>
-                  setFirmDetailsWithGstWithParther((prevDetails) => {
-                    const updatedPartners = prevDetails.partherDetails.map(
-                      (partner, i) =>
-                        i === index ? { ...partner, [field]: value } : partner
-                    );
-                    return { ...prevDetails, partherDetails: updatedPartners };
-                  })
-                }
-                onFileChange={handleFileChange}
+            </Grid>
+            <FileUpload
+              label="Upload Company PAN Image"
+              onChange={(e) => handleFileChange(e, "companyPanImage")}
+              preview={companyDetails.companyPanImage}
+            />
+            <Grid item xs={6}>
+              <TextField
+                label="Aadhar Number"
+                variant="outlined"
+                required
+                fullWidth
+                name="aadharNumber"
+                value={companyDetails.aadharNumber || ""}
+                onChange={handleInputChange}
               />
-            )}
-            {firmType === "LLP" && (
-              <Llp
-                firmDetails={firmDetailsWithGst}
-                onFirmDetailChange={handleFirmDetailsChangeWithGst}
+            </Grid>
+            <FileUpload
+              label="Upload Aadhar Front Image"
+              onChange={(e) => handleFileChange(e, "aadharImage")}
+              preview={companyDetails.aadharImage}
+            />
+            <FileUpload
+              label="Upload Aadhar Back Image"
+              onChange={(e) => handleFileChange(e, "aadharBack Image")}
+              preview={companyDetails.aadharBackImage}
+            />
+            <Grid item xs={6}>
+              <TextField
+                label="CIN No"
+                variant="outlined"
+                required
+                fullWidth
+                name="cinNo"
+                value={companyDetails.cinNo || ""}
+                onChange={handleInputChange}
               />
-            )}
-            {firmType === "PVT LTD" && (
-              <PvtLtd
-                firmDetails={firmDetailsWithGst}
-                onFirmDetailChange={handleFirmDetailsChangeWithGst}
+            </Grid>
+            <Grid item xs={12} md={6} container spacing={2}>
+              <Grid item xs={8}>
+                <Button
+                  variant="contained"
+                  component="label"
+                  fullWidth
+                  style={{ backgroundColor: "#3 f51b5", color: "#fff" }}
+                >
+                  Upload Document
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files);
+                      const previews = files.map((file) =>
+                        URL.createObjectURL(file)
+                      );
+                      setCompanyDetails((prevDetails) => ({
+                        ...prevDetails,
+                        documentImages: previews,
+                      }));
+                    }}
+                  />
+                </Button>
+              </Grid>
+              <Grid item xs={4}>
+                <Avatar
+                  alt="Upload Document Preview"
+                  src={
+                    companyDetails.documentImages &&
+                    companyDetails.documentImages[0]
+                  }
+                  style={{
+                    width: "50px",
+                    height: "50px",
+                    marginLeft: "10px",
+                    marginTop: "10px",
+                  }}
+                />
+              </Grid>
+            </Grid>
+            <BankDetails
+              partner={companyDetails}
+              handleBankDetailsChange={handleBankDetailsChange}
+            />
+
+            <Grid item xs={12} container>
+              <Grid item xs={12} container justifyContent="flex-end">
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleAddPartner}
+                  startIcon={<AddIcon />}
+                >
+                  Add More Partner
+                </Button>
+              </Grid>
+            </Grid>
+            {companyDetails.partners.map((partner, index) => (
+              <PartnerDetails
+                key={index}
+                partner={{ ...partner, index }}
+                handleFileChange={handleFileChange}
+                onRemove={() => handleRemovePartner(index)}
               />
-            )}
-            {firmType === "Limited" && (
-              <Limited
-                firmDetails={firmDetailsWithGst}
-                onFirmDetailChange={handleFirmDetailsChangeWithGst}
-              />
-            )}
+            ))}
           </>
         )}
       </Grid>
 
-      <Grid item xs={12} style={{ marginTop: "20px" }}>
-        <Button variant="contained" color="primary" onClick={handleSubmit}>
-          Submit
-        </Button>
+      <Grid
+        container
+        spacing={2}
+        justifyContent="flex-start"
+        style={{ marginTop: "20px" }}
+      >
+        <Grid item xs={12} md={6}>
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            onClick={handleSubmit}
+          >
+            Submit
+          </Button>
+        </Grid>
       </Grid>
     </Paper>
   );

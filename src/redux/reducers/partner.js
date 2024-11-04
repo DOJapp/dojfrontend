@@ -4,7 +4,7 @@ const initialState = {
   partners: [],
   partner: null,
   loading: false,
-  success: false, // To track success state
+  success: false, 
   error: null,
 };
 
