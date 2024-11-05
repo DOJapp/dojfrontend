@@ -54,16 +54,12 @@ const PartnerList = () => {
                 field: "serial",
               },
               {
-                title: "Name",
-                field: "name", // Adjust based on your actual field name for title
+                title: "Pan Number",
+                field: "panNumber", 
               },
               {
-                title: "Email",
-                field: "email",
-              },
-              {
-                title: "Phone No",
-                field: "phone", // Ensure this field exists in your data
+                title: "Firm Name",
+                field: "firmName", 
               },
               {
                 title: "Status",

@@ -11,12 +11,13 @@ import {
   TextField,
   Avatar,
   Divider,
+  CircularProgress
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import axios from "axios";
 import FileUpload from "../../Components/FileUpload";
 import BankDetails from "./BankDetails.js";
-import { connect ,useDispatch, useSelector} from "react-redux";
+import { connect, useDispatch, useSelector } from "react-redux";
 import Loader from "../../Components/loading/Loader.js";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2"; // Import Swal for alerts
@@ -33,9 +34,8 @@ const PartnerDetails = ({ partner, handleFileChange, onRemove }) => {
           alignItems: "center",
         }}
       >
-        <Typography variant="h6" gutterBottom>{`Partner ${
-          partner.index + 1
-        }`}</Typography>
+        <Typography variant="h6" color="secondary" gutterBottom>{`Partner ${partner.index + 1
+          }`}</Typography>
         {partner.index !== 0 && (
           <Button
             variant="contained"
@@ -154,7 +154,6 @@ const PartnerDetails = ({ partner, handleFileChange, onRemove }) => {
 const AddPartner = () => {
   const navigate = useNavigate();
   const [error, setError] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
 
   const [companyDetails, setCompanyDetails] = useState({
@@ -172,7 +171,11 @@ const AddPartner = () => {
     ifscCode: "",
     accountHolderName: "",
     gstNumber: "",
-    composition: "",
+    gstType: "",
+    compositonType: "",
+    cessType: "",
+    goodsServiceType: "",
+    percentage: "",
     firmType: "",
     cinNumber: "",
     partners: [
@@ -190,13 +193,27 @@ const AddPartner = () => {
     ],
   });
 
-  console.log("companyDetails", companyDetails);
 
   // Handle GST selection change
   const handleGstChange = (event) => {
     setCompanyDetails({ ...companyDetails, gstSelected: event.target.value });
   };
+  const handleGstTypeChange = (event) => {
+    setCompanyDetails({ ...companyDetails, gstType: event.target.value });
+  };
 
+  const handleCompositonTypeChange = (event) => {
+    setCompanyDetails({ ...companyDetails, compositonType: event.target.value });
+
+  }
+  const handleCessTypeChange = (event) => {
+    setCompanyDetails({ ...companyDetails, cessType: event.target.value });
+
+  }
+  const handleGoosServiceTypeChange = (event) => {
+    setCompanyDetails({ ...companyDetails, goodsServiceType: event.target.value });
+
+  }
   // Handle Firm Type change
   const handleFirmTypeChange = (event) => {
     setCompanyDetails({ ...companyDetails, firmType: event.target.value });
@@ -205,7 +222,21 @@ const AddPartner = () => {
   // Handle input changes
   const handleInputChange = (event) => {
     const { name, value } = event.target;
-    setCompanyDetails((prevDetails) => ({ ...prevDetails, [name]: value }));
+    let updatedValue = value;
+    if (name === "panNumber" || name === "gstNumber") {
+      updatedValue = value.toUpperCase();
+    }
+
+    if (name === "aadharNumber" && !/^\d*$/.test(value)) {
+      return;
+    }
+
+    if (name === "aadharNumber") {
+      if (!/^\d*$/.test(value)) {
+        return;
+      }
+    }
+    setCompanyDetails((prevDetails) => ({ ...prevDetails, [name]: updatedValue }));
   };
 
   // Handle file changes
@@ -249,6 +280,12 @@ const AddPartner = () => {
   };
   // Handle form submission
   const handleSubmit = async () => {
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setError(validationErrors);
+      return;
+    }
+
     let formData;
     if (companyDetails.gstSelected === "No") {
       formData = {
@@ -264,7 +301,7 @@ const AddPartner = () => {
         accountNumber: companyDetails.accountNumber,
         ifscCode: companyDetails.ifscCode,
         accountHolderName: companyDetails.accountHolderName,
-        documentImages:companyDetails.documentImages,
+        documentImages: companyDetails.documentImages,
       };
     } else {
       formData = {
@@ -272,7 +309,11 @@ const AddPartner = () => {
         gstNumber: companyDetails.gstNumber,
         firmName: companyDetails.firmName,
         firmAddress: companyDetails.firmAddress,
-        composition: companyDetails.composition,
+        gstType: companyDetails.gstType,
+        compositonType: companyDetails.compositonType,
+        cessType: companyDetails.cessType,
+        goodsServiceType: companyDetails.goodsServiceType,
+        percentage: companyDetails.percentage,
         firmType: companyDetails.firmType,
         cinNumber: companyDetails.cinNumber,
         panNumber: companyDetails.panNumber,
@@ -280,7 +321,7 @@ const AddPartner = () => {
         aadharNumber: companyDetails.aadharNumber,
         aadharFrontImage: companyDetails.aadharFrontImage,
         aadharBackImage: companyDetails.aadharBackImage,
-        documentImages:companyDetails.documentImages,
+        documentImages: companyDetails.documentImages,
         bankName: companyDetails.bankName,
         accountNumber: companyDetails.accountNumber,
         ifscCode: companyDetails.ifscCode,
@@ -297,11 +338,6 @@ const AddPartner = () => {
   useEffect(() => {
     if (partnerState.loading) return;
 
-    // if (partnerState.error) {
-    //   Swal.fire("Error!", partnerState.error, "error");
-    // } else if (partnerState.partners.length > 0) {
-    //   Swal.fire("Success!", "Product added successfully!", "success");
-    // }
   }, [partnerState]);
 
   // Handle add partner
@@ -324,6 +360,65 @@ const AddPartner = () => {
       };
     });
   };
+
+
+  const validateForm = () => {
+    const errors = {};
+    if (!companyDetails.firmName) {
+      errors.firmName = "Firm Name is required.";
+    }
+
+    if (!companyDetails.firmAddress) {
+      errors.firmAddress = "Firm Name is required.";
+    }
+
+    if (!companyDetails.panNumber) {
+      errors.panNumber = "PAN Number is required.";
+    } else if (companyDetails.panNumber.length !== 10) {
+      errors.panNumber = "PAN Number must be exactly 10 characters.";
+    } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(companyDetails.panNumber)) {
+      errors.panNumber = "Invalid PAN Number format.";
+    }
+
+    if (!companyDetails.panImage) {
+      errors.panImage = "PAN Image is required.";
+    }
+
+    if (!companyDetails.aadharNumber) {
+      errors.aadharNumber = "Aadhar Number is required.";
+    } else if (companyDetails.aadharNumber.length !== 12) {
+      errors.aadharNumber = "Aadhar Number must be exactly 12 digits.";
+    } else if (!/^\d{12}$/.test(companyDetails.aadharNumber)) {
+      errors.aadharNumber = "Invalid Aadhar Number format. It must be a 12-digit number.";
+    }
+
+    if (!companyDetails.aadharFrontImage) {
+      errors.aadharFrontImage = "aadhar Front Image is required.";
+    }
+    if (!companyDetails.aadharBackImage) {
+      errors.aadharBackImage = "aadhar Back Image is required.";
+    }
+
+    if (!companyDetails.bankName) {
+      errors.bankName = "Bank Name is required.";
+    }
+    if (!companyDetails.accountNumber) {
+      errors.accountNumber = "Account Number is required.";
+    }
+
+    if (companyDetails.gstSelected === "Yes") {
+      if (!companyDetails.gstNumber) {
+        errors.gstNumber = "GST Number is required.";
+      } else if (!/^\d{2}[A-Z]{5}\d{4}[A-Z]{1}\d{1}[Z]{1}[A-Z\d]{1}$/.test(companyDetails.gstNumber)) {
+        errors.gstNumber = "Invalid GST Number format.";
+      }
+
+
+    }
+    return errors;
+  };
+
+
 
   // Handle remove partner
   const handleRemovePartner = (index) => {
@@ -368,12 +463,17 @@ const AddPartner = () => {
                 name="panNumber"
                 value={companyDetails.panNumber || ""}
                 onChange={handleInputChange}
+                error={!!error.panNumber}
+                helperText={error.panNumber}
+                inputProps={{ maxLength: 10 }}
               />
             </Grid>
             <FileUpload
               label="Upload PAN Image"
               onChange={(e) => handleFileChange(e, "panImage")}
               preview={companyDetails.panImage}
+              error={!!error.panImage}
+              helperText={error.panImage}
             />
             <Grid item xs={12} md={6}>
               <TextField
@@ -384,17 +484,17 @@ const AddPartner = () => {
                 name="aadharNumber"
                 value={companyDetails.aadharNumber || ""}
                 onChange={handleInputChange}
+                error={!!error.aadharNumber}
+                helperText={error.aadharNumber}
+                inputProps={{ maxLength: 12 }}
               />
             </Grid>
             <FileUpload
               label="Upload Aadhar Front Image"
               onChange={(e) => handleFileChange(e, "aadharFrontImage")}
               preview={companyDetails.aadharFrontImage}
-            />
-            <FileUpload
-              label="Upload Aadhar Back Image"
-              onChange={(e) => handleFileChange(e, "aadharBackImage")}
-              preview={companyDetails.aadharBackImage}
+              error={!!error.aadharFrontImage}
+              helperText={error.aadharFrontImage}
             />
             <Grid item xs={12} md={6}>
               <TextField
@@ -405,8 +505,18 @@ const AddPartner = () => {
                 name="firmName"
                 value={companyDetails.firmName || ""}
                 onChange={handleInputChange}
+                error={!!error.firmName}
+                helperText={error.firmName}
               />
             </Grid>
+            <FileUpload
+              label="Upload Aadhar Back Image"
+              onChange={(e) => handleFileChange(e, "aadharBackImage")}
+              preview={companyDetails.aadharBackImage}
+              error={!!error.aadharBackImage}
+              helperText={error.aadharBackImage}
+            />
+            
             <Grid item xs={12} md={6}>
               <TextField
                 label="Firm Address"
@@ -416,6 +526,8 @@ const AddPartner = () => {
                 name="firmAddress"
                 value={companyDetails.firmAddress || ""}
                 onChange={handleInputChange}
+                error={!!error.firmAddress}
+                helperText={error.firmAddress}
               />
             </Grid>
             <Grid item xs={12} md={6} container spacing={2}>
@@ -485,13 +597,16 @@ const AddPartner = () => {
             </Grid>
             <Grid item xs={12} md={6}>
               <TextField
-                label="GST Number"
+                label="GST Number "
                 variant="outlined"
                 required
                 fullWidth
+                placeholder="e.g., 22ABCDE1234F1Z5"
                 name="gstNumber"
                 value={companyDetails.gstNumber || ""}
                 onChange={handleInputChange}
+                error={!!error.gstNumber}
+                helperText={error.gstNumber}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -503,6 +618,8 @@ const AddPartner = () => {
                 name="firmName"
                 value={companyDetails.firmName || ""}
                 onChange={handleInputChange}
+                error={!!error.firmName}
+                helperText={error.firmName}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -514,19 +631,79 @@ const AddPartner = () => {
                 name="firmAddress"
                 value={companyDetails.firmAddress || ""}
                 onChange={handleInputChange}
+                error={!!error.firmAddress}
+                helperText={error.firmAddress}
               />
             </Grid>
             <Grid item xs={12} md={6}>
+              <FormControl fullWidth variant="outlined" required>
+                <InputLabel>GST Type</InputLabel>
+                <Select
+                  label="GST Type"
+                  value={companyDetails.gstType}
+                  onChange={handleGstTypeChange}
+                >
+                  <MenuItem value="Compositon">Compositon</MenuItem>
+                  <MenuItem value="Regular">Regular</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth variant="outlined" required>
+                <InputLabel>Compositon Type</InputLabel>
+                <Select
+                  label="Compositon Type"
+                  value={companyDetails.compositonType}
+                  onChange={handleCompositonTypeChange}
+                >
+                  <MenuItem value="Inclusive">Inclusive</MenuItem>
+                  <MenuItem value="Exclusive">Exclusive</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth variant="outlined" required>
+                <InputLabel>Cess Type</InputLabel>
+                <Select
+                  label="Compositon Type"
+                  value={companyDetails.cessType}
+                  onChange={handleCessTypeChange}
+                >
+                  <MenuItem value="Cess">Cess</MenuItem>
+                  <MenuItem value="E-cess">E-cess</MenuItem>
+                  <MenuItem value="A-cess">A-cess</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={6}>
               <TextField
-                label="Composition"
+                label="Percentage"
                 variant="outlined"
                 required
                 fullWidth
-                name="composition"
-                value={companyDetails.composition || ""}
+                name="percentage"
+                value={companyDetails.percentage || ""}
                 onChange={handleInputChange}
               />
             </Grid>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth variant="outlined" required>
+                <InputLabel>GST Type</InputLabel>
+                <Select
+                  label="Goods Service Type"
+                  value={companyDetails.goodsServiceType}
+                  onChange={handleGoosServiceTypeChange}
+                >
+                  <MenuItem value="CGST">CGST  (Central Goods and Services Tax)</MenuItem>
+                  <MenuItem value="SGST">SGST (State Goods and Services. Tax )</MenuItem>
+                  <MenuItem value="IGST">IGST (Integrated Goods and Services Tax)</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+
             <Grid item xs={12}>
               <Typography variant="h5" component="h2" gutterBottom>
                 Firm Details
@@ -559,6 +736,9 @@ const AddPartner = () => {
                 name="panNumber"
                 value={companyDetails.panNumber || ""}
                 onChange={handleInputChange}
+                error={!!error.panNumber}
+                helperText={error.panNumber}
+                inputProps={{ maxLength: 10 }}
               />
             </Grid>
             <FileUpload
@@ -566,38 +746,48 @@ const AddPartner = () => {
               onChange={(e) => handleFileChange(e, "panImage")}
               preview={companyDetails.panImage}
             />
-            <Grid item xs={6}>
-              <TextField
-                label="Aadhar Number"
-                variant="outlined"
-                required
-                fullWidth
-                name="aadharNumber"
-                value={companyDetails.aadharNumber || ""}
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <FileUpload
-              label="Upload Aadhar Front Image"
-              onChange={(e) => handleFileChange(e, "aadharFrontImage")}
-              preview={companyDetails.aadharFrontImage}
-            />
-            <FileUpload
-              label="Upload Aadhar Back Image"
-              onChange={(e) => handleFileChange(e, "aadharBackImage")}
-              preview={companyDetails.aadharBackImage}
-            />
-            <Grid item xs={6}>
-              <TextField
-                label="CIN No"
-                variant="outlined"
-                required
-                fullWidth
-                name="cinNumber"
-                value={companyDetails.cinNumber || ""}
-                onChange={handleInputChange}
-              />
-            </Grid>
+            {companyDetails.firmType == "Proprietor" && (
+              <>
+                <Grid item xs={6}>
+                  <TextField
+                    label="Aadhar Number"
+                    variant="outlined"
+                    required
+                    fullWidth
+                    name="aadharNumber"
+                    value={companyDetails.aadharNumber || ""}
+                    onChange={handleInputChange}
+                    error={!!error.aadharNumber}
+                    helperText={error.aadharNumber}
+                    inputProps={{ maxLength: 12 }}
+                  />
+                </Grid>
+                <FileUpload
+                  label="Upload Aadhar Front Image"
+                  onChange={(e) => handleFileChange(e, "aadharFrontImage")}
+                  preview={companyDetails.aadharFrontImage}
+                />
+                <FileUpload
+                  label="Upload Aadhar Back Image"
+                  onChange={(e) => handleFileChange(e, "aadharBackImage")}
+                  preview={companyDetails.aadharBackImage}
+                />
+              </>
+            )}
+            {companyDetails.firmType !== "Proprietor" && companyDetails.firmType !== "Partnership" && (
+
+              <Grid item xs={6}>
+                <TextField
+                  label="CIN No"
+                  variant="outlined"
+                  required
+                  fullWidth
+                  name="cinNumber"
+                  value={companyDetails.cinNumber || ""}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+            )}
             <Grid item xs={12} md={6} container spacing={2}>
               <Grid item xs={8}>
                 <Button
@@ -645,20 +835,21 @@ const AddPartner = () => {
               partner={companyDetails}
               handleBankDetailsChange={handleBankDetailsChange}
             />
-
-            <Grid item xs={12} container>
-              <Grid item xs={12} container justifyContent="flex-end">
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleAddPartner}
-                  startIcon={<AddIcon />}
-                >
-                  Add More Partner
-                </Button>
+            {companyDetails.firmType !== "Proprietor" && (
+              <Grid item xs={12} container>
+                <Grid item xs={12} container justifyContent="flex-end">
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleAddPartner}
+                    startIcon={<AddIcon />}
+                  >
+                    Add More Partner
+                  </Button>
+                </Grid>
               </Grid>
-            </Grid>
-            {companyDetails.partners.map((partner, index) => (
+            )}
+            {companyDetails.firmType !== "Proprietor" && companyDetails.partners.map((partner, index) => (
               <PartnerDetails
                 key={index}
                 partner={{ ...partner, index }}
@@ -666,6 +857,7 @@ const AddPartner = () => {
                 onRemove={() => handleRemovePartner(index)}
               />
             ))}
+
           </>
         )}
       </Grid>
@@ -673,7 +865,7 @@ const AddPartner = () => {
       <Grid
         container
         spacing={2}
-        justifyContent="flex-start"
+        justifyContent="center"
         style={{ marginTop: "20px" }}
       >
         <Grid item xs={12} md={6}>
@@ -682,8 +874,9 @@ const AddPartner = () => {
             color="primary"
             fullWidth
             onClick={handleSubmit}
+            disabled={partnerState.loading}
           >
-            Submit
+            {partnerState.loading ? <CircularProgress size={24} /> : "Submit"}
           </Button>
         </Grid>
       </Grid>
