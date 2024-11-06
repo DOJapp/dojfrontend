@@ -153,7 +153,7 @@ const FirmDetails = () => {
               error={!!error.aadharBackImage}
               helperText={error.aadharBackImage}
               onChange={(e) => handleFileChange(e, "aadharBackImage")}
-              disabled={!isEditing} // Disable if not editing
+              disabled={!isEditing} 
             />
           </Grid>
         </Grid>

@@ -74,7 +74,7 @@ function GstDetails() {
   };
 
   return (
-    <Paper elevation={3} style={{ padding: "20px", margin: "20px 0px" }}>
+    <Paper spacing={2} elevation={3} style={{ padding: "20px", position: "relative", margin: "20px 0px" }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
         <Typography variant="h6" gutterBottom>
           GST Details

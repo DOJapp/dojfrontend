@@ -28,7 +28,7 @@ const BankDetails = () => {
   };
 
   return (
-    <Paper elevation={3} style={{ padding: "20px", position: "relative" }}>
+    <Paper spacing={2} elevation={3} style={{ padding: "20px", position: "relative", margin: "20px 0px" }}>
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Typography variant="h6" gutterBottom>
           Bank Details

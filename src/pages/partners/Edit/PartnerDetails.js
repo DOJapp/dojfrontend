@@ -1,74 +1,126 @@
-import React from 'react'
+import React, { useState } from 'react';
+import {
+    Grid,
+    Typography,
+    TextField,
+    Paper,
+    Box,
+    IconButton,
+    Button,
+    CircularProgress,
+} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import FileUpload from '../../../Components/FileUpload';
 
 function PartnerDetails() {
-    return (
+    const [isEditing, setIsEditing] = useState(false);
+    const [panNumber, setPanNumber] = useState('');
+    const [aadharNumber, setAadharNumber] = useState('');
+    const [panImage, setPanImage] = useState(null);
+    const [aadharFrontImage, setAadharFrontImage] = useState(null);
+    const [aadharBackImage, setAadharBackImage] = useState(null);
+    const [bankName, setBankName] = useState('');
+    const [accountNumber, setAccountNumber] = useState('');
+    const [ifscCode, setIfscCode] = useState('');
+    const [accountHolderName, setAccountHolderName] = useState('');
+    const [loading, setLoading] = useState(false);
 
-        <Grid item xs={12}>
-            <div
-                style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                }}
-            >
-                <Typography variant="h6" color="secondary" gutterBottom>{`Partner ${partner.index + 1
-                    }`}</Typography>
-                {partner.index !== 0 && (
-                    <Button
-                        variant="contained"
-                        color="secondary"
-                        size="small"
-                        onClick={onRemove}
+    const handleEditClick = () => {
+        setIsEditing(!isEditing);
+    };
+
+    const handleInputChange = (setter) => (e) => {
+        setter(e.target.value);
+    };
+
+    const handleFileChange = (setter) => (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                setter(reader.result);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            setter(null);
+        }
+    };
+
+    const handleSubmitClick = () => {
+        setLoading(true);
+        setTimeout(() => {
+            setLoading(false);
+            setIsEditing(false);
+        }, 2000);
+    };
+
+    return (
+        <Paper elevation={3} style={{ padding: '20px', position: 'relative', margin: '20px 0px' }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Typography variant="h6" gutterBottom>
+                    Partner Details
+                </Typography>
+                {!isEditing && (
+                    <IconButton
+                        aria-label="edit"
+                        onClick={handleEditClick}
+                        style={{ border: '1px solid red', marginBottom: '20px' }}
                     >
-                        Remove
-                    </Button>
+                        <EditIcon />
+                    </IconButton>
                 )}
-            </div>
-            <Divider style={{ marginBottom: "10px" }} />
+            </Box>
             <Grid container spacing={2}>
-                <Grid item xs={6}>
+                <Grid item xs={12} md={6}>
                     <TextField
                         label="PAN Number"
                         variant="outlined"
                         required
                         fullWidth
-                        name="panNumber"
-                        value={partner.panNumber || ""}
-                        onChange={(e) =>
-                            handleFileChange(e, "panNumber", partner.index, true)
-                        }
+                        value={panNumber}
+                        onChange={handleInputChange(setPanNumber)}
+                        inputProps={{ maxLength: 10 }}
+                        disabled={!isEditing}
                     />
                 </Grid>
-                <FileUpload
-                    label="Upload PAN Image"
-                    onChange={(e) => handleFileChange(e, "panImage", partner.index)}
-                    preview={partner.panImage}
-                />
-                <Grid item xs={6}>
+                <Grid item xs={12} md={6}>
                     <TextField
                         label="Aadhar Number"
                         variant="outlined"
                         required
                         fullWidth
-                        name="aadharNumber"
-                        value={partner.aadharNumber || ""}
-                        onChange={(e) =>
-                            handleFileChange(e, "aadharNumber", partner.index, true)
-                        }
+                        value={aadharNumber}
+                        onChange={handleInputChange(setAadharNumber)}
+                        inputProps={{ maxLength: 12 }}
+                        disabled={!isEditing}
                     />
                 </Grid>
-                <FileUpload
-                    label="Upload Aadhar Front Image"
-                    onChange={(e) => handleFileChange(e, "aadharFrontImage", partner.index)}
-                    preview={partner.aadharFrontImage}
-                />
-                <FileUpload
-                    label="Upload Aadhar Back Image"
-                    onChange={(e) =>
-                        handleFileChange(e, "aadharBackImage", partner.index)
-                    }
-                    preview={partner.aadharBackImage}
-                />
+                <Grid item xs={12} md={6}>
+                    <FileUpload
+                        label="Upload PAN Image"
+                        preview={panImage}
+                        onChange={handleFileChange(setPanImage)}
+                        disabled={!isEditing}
+                    />
+                </Grid>
+                <Grid item container xs={12} md={6}>
+                    <Grid item xs={12} md={6}>
+                        <FileUpload
+                            label="Aadhar Front"
+                            preview={aadharFrontImage}
+                            onChange={handleFileChange(setAadharFrontImage)}
+                            disabled={!isEditing}
+                        />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                        <FileUpload
+                            label="Aadhar Back"
+                            preview={aadharBackImage}
+                            onChange={handleFileChange(setAadharBackImage)}
+                            disabled={!isEditing}
+                        />
+                    </Grid>
+                </Grid>
                 <Grid item xs={12}>
                     <Typography variant="h6">Bank Details</Typography>
                 </Grid>
@@ -78,11 +130,9 @@ function PartnerDetails() {
                         variant="outlined"
                         required
                         fullWidth
-                        name="bankName"
-                        value={partner.bankName || ""}
-                        onChange={(e) =>
-                            handleFileChange(e, "bankName", partner.index, true)
-                        }
+                        value={bankName}
+                        onChange={handleInputChange(setBankName)}
+                        disabled={!isEditing}
                     />
                 </Grid>
                 <Grid item xs={12} md={6}>
@@ -91,11 +141,9 @@ function PartnerDetails() {
                         variant="outlined"
                         required
                         fullWidth
-                        name="accountNumber"
-                        value={partner.accountNumber || ""}
-                        onChange={(e) =>
-                            handleFileChange(e, "accountNumber", partner.index, true)
-                        }
+                        value={accountNumber}
+                        onChange={handleInputChange(setAccountNumber)}
+                        disabled={!isEditing}
                     />
                 </Grid>
                 <Grid item xs={12} md={6}>
@@ -103,11 +151,9 @@ function PartnerDetails() {
                         label="IFSC Code"
                         variant="outlined"
                         fullWidth
-                        name="ifscCode"
-                        value={partner.ifscCode || ""}
-                        onChange={(e) =>
-                            handleFileChange(e, "ifscCode", partner.index, true)
-                        }
+                        value={ifscCode}
+                        onChange={handleInputChange(setIfscCode)}
+                        disabled={!isEditing}
                     />
                 </Grid>
                 <Grid item xs={12} md={6}>
@@ -115,17 +161,30 @@ function PartnerDetails() {
                         label="Account Holder Name"
                         variant="outlined"
                         fullWidth
-                        name="accountHolderName"
-                        value={partner.accountHolderName || ""}
-                        onChange={(e) =>
-                            handleFileChange(e, "accountHolderName", partner.index, true)
-                        }
+                        value={accountHolderName}
+                        onChange={handleInputChange(setAccountHolderName)}
+                        disabled={!isEditing}
                     />
                 </Grid>
             </Grid>
-        </Grid>
-
-    )
+            {isEditing && (
+                <Box display="flex" justifyContent="flex-end" marginTop="20px">
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleSubmitClick}
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <CircularProgress size={24} sx={{ color: 'white' }} />
+                        ) : (
+                            'Submit'
+                        )}
+                    </Button>
+                </Box>
+            )}
+        </Paper>
+    );
 }
 
-export default PartnerDetails
+export default PartnerDetails;
