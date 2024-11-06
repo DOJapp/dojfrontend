@@ -27,6 +27,8 @@ const FirmDetails = () => {
     panImage: null,
     aadharFrontImage: null,
     aadharBackImage: null,
+    firmType: "",
+    cinNumber: "",
   });
   const [error, setError] = useState({
     panNumber: "",
@@ -36,13 +38,58 @@ const FirmDetails = () => {
     panImage: "",
     aadharFrontImage: "",
     aadharBackImage: "",
+    firmType: "",
+    cinNumber: "",
   });
+
+  const validateField = (field, value) => {
+    let errorMessage = "";
+    switch (field) {
+      case "panNumber":
+        errorMessage = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(value)
+          ? ""
+          : "PAN Number must be in the format AAAAA9999A.";
+        break;
+      case "aadharNumber":
+        errorMessage = /^[0-9]{12}$/.test(value)
+          ? ""
+          : "Aadhar Number must be 12 digits.";
+        break;
+      case "firmName":
+        errorMessage = /^[A-Za-z\s]+$/.test(value)
+          ? ""
+          : "Firm Name should only contain letters and spaces.";
+        break;
+      case "firmAddress":
+        errorMessage = value.trim() === "" ? "Firm Address is required." : "";
+        break;
+      case "panImage":
+      case "aadharFrontImage":
+      case "aadharBackImage":
+        errorMessage = value ? "" : "This field is required.";
+        break;
+      case "cinNumber":
+        errorMessage = /^[A-Z]{1}[A-Z0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}$/.test(value)
+          ? ""
+          : "CIN Number must be valid.";
+        break;
+      default:
+        break;
+    }
+    return errorMessage;
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setCompanyDetails((prev) => ({
       ...prev,
       [name]: value,
+    }));
+
+    const errorMessage = validateField(name, value);
+    setError((prev) => ({
+      ...prev,
+      [name]: errorMessage,
     }));
   };
 
@@ -53,14 +100,14 @@ const FirmDetails = () => {
       reader.onload = () => {
         setCompanyDetails((prev) => ({
           ...prev,
-          [fieldName]: reader.result, // Store the Data URL for preview
+          [fieldName]: reader.result,
         }));
       };
       reader.readAsDataURL(file);
     } else {
       setCompanyDetails((prev) => ({
         ...prev,
-        [fieldName]: null, // Reset if no file is selected
+        [fieldName]: null,
       }));
     }
   };
@@ -75,6 +122,96 @@ const FirmDetails = () => {
       setPartnerState({ loading: false });
       setIsEditing(false);
     }, 2000);
+  };
+
+  const handleKeyDown = (e, fieldName) => {
+    if (fieldName === "panNumber") {
+      if (!/[A-Za-z0-9]/.test(e.key)) {
+        e.preventDefault();
+      }
+    } else if (fieldName === "aadharNumber") {
+      if (!/[0-9]/.test(e.key)) {
+        e.preventDefault();
+      }
+    }
+  };
+
+  const formatCinNumber = (value) => {
+    let formattedValue = value.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+    const length = formattedValue.length;
+    if (length <= 1) {
+      return formattedValue.slice(0, 1);
+    }
+    if (length <= 6) {
+      return (
+        formattedValue.slice(0, 1) +
+        formattedValue.slice(1, 6).replace(/[^0-9]/g, "")
+      );
+    }
+    if (length <= 8) {
+      return (
+        formattedValue.slice(0, 1) +
+        formattedValue.slice(1, 6).replace(/[^0-9]/g, "") +
+        formattedValue.slice(6, 8).replace(/[^A-Za-z]/g, "")
+      );
+    }
+    if (length <= 12) {
+      return (
+        formattedValue.slice(0, 1) +
+        formattedValue.slice(1, 6).replace(/[^0-9]/g, "") +
+        formattedValue.slice(6, 8).replace(/[^A-Za-z]/g, "") +
+        formattedValue.slice(8, 12).replace(/[^0-9]/g, "")
+      );
+    }
+    return (
+      formattedValue.slice(0, 1) +
+      formattedValue.slice(1, 6).replace(/[^0-9]/g, "") +
+      formattedValue.slice(6, 8).replace(/[^A-Za-z]/g, "") +
+      formattedValue.slice(8, 12).replace(/[^0-9]/g, "") +
+      formattedValue.slice(12, 15).replace(/[^A-Za-z]/g, "")+
+      formattedValue.slice(15, 21).replace(/[^0-9]/g, "")
+    );
+  };
+
+  const formatPanNumber = (value) => {
+    let formattedValue = value.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+    if (formattedValue.length <= 5) {
+      return formattedValue.replace(/[^A-Za-z]/g, '');
+    }
+    if (formattedValue.length <= 9) {
+      return formattedValue.slice(0, 5) + formattedValue.slice(5).replace(/[^0-9]/g, '');
+    }
+    return formattedValue.slice(0, 5) + formattedValue.slice(5, 9).replace(/[^0-9]/g, '') + formattedValue.slice(9, 10).replace(/[^A-Za-z]/g, '');
+  };
+
+  const handlePanInputChange = (e) => {
+    const { value } = e.target;
+    const formattedPanValue = formatPanNumber(value); // format PAN number
+    setCompanyDetails((prev) => ({
+      ...prev,
+      panNumber: formattedPanValue,
+    }));
+
+    const panErrorMessage = validateField("panNumber", formattedPanValue); // Validate PAN number
+    setError((prev) => ({
+      ...prev,
+      panNumber: panErrorMessage, // Set PAN error
+    }));
+  };
+
+  const handleCinInputChange = (e) => {
+    const { value } = e.target;
+    const formattedCinValue = formatCinNumber(value); // format CIN number
+    setCompanyDetails((prev) => ({
+      ...prev,
+      cinNumber: formattedCinValue,
+    }));
+
+    const cinErrorMessage = validateField("cinNumber", formattedCinValue); // Validate CIN number
+    setError((prev) => ({
+      ...prev,
+      cinNumber: cinErrorMessage, // Set CIN error
+    }));
   };
 
   return (
@@ -102,11 +239,12 @@ const FirmDetails = () => {
             fullWidth
             name="panNumber"
             value={companyDetails.panNumber}
-            onChange={handleInputChange}
+            onChange={handlePanInputChange}
+            onKeyDown={(e) => handleKeyDown(e, "panNumber")}
             error={!!error.panNumber}
             helperText={error.panNumber}
             inputProps={{ maxLength: 10 }}
-            disabled={!isEditing} // Disable if not editing
+            disabled={!isEditing}
           />
         </Grid>
         <Grid item xs={12} md={6}>
@@ -118,10 +256,11 @@ const FirmDetails = () => {
             name="aadharNumber"
             value={companyDetails.aadharNumber}
             onChange={handleInputChange}
+            onKeyDown={(e) => handleKeyDown(e, "aadharNumber")}
             error={!!error.aadharNumber}
             helperText={error.aadharNumber}
             inputProps={{ maxLength: 12 }}
-            disabled={!isEditing} // Disable if not editing
+            disabled={!isEditing}
           />
         </Grid>
         <Grid item xs={12} md={6}>
@@ -131,10 +270,9 @@ const FirmDetails = () => {
             error={!!error.panImage}
             helperText={error.panImage}
             onChange={(e) => handleFileChange(e, "panImage")}
-            disabled={!isEditing} // Disable if not editing
+            disabled={!isEditing}
           />
         </Grid>
-        
         <Grid item container xs={12} md={6}>
           <Grid item xs={12} md={6}>
             <FileUpload
@@ -143,7 +281,7 @@ const FirmDetails = () => {
               error={!!error.aadharFrontImage}
               helperText={error.aadharFrontImage}
               onChange={(e) => handleFileChange(e, "aadharFrontImage")}
-              disabled={!isEditing} // Disable if not editing
+              disabled={!isEditing}
             />
           </Grid>
           <Grid item xs={12} md={6}>
@@ -153,7 +291,7 @@ const FirmDetails = () => {
               error={!!error.aadharBackImage}
               helperText={error.aadharBackImage}
               onChange={(e) => handleFileChange(e, "aadharBackImage")}
-              disabled={!isEditing} 
+              disabled={!isEditing}
             />
           </Grid>
         </Grid>
@@ -168,7 +306,7 @@ const FirmDetails = () => {
             onChange={handleInputChange}
             error={!!error.firmName}
             helperText={error.firmName}
-            disabled={!isEditing} // Disable if not editing
+            disabled={!isEditing}
           />
         </Grid>
         <Grid item xs={12} md={6}>
@@ -182,17 +320,19 @@ const FirmDetails = () => {
             onChange={handleInputChange}
             error={!!error.firmAddress}
             helperText={error.firmAddress}
-            disabled={!isEditing} // Disable if not editing
+            disabled={!isEditing}
           />
         </Grid>
         <Grid item xs={12} md={6}>
-          <FormControl fullWidth variant="outlined" required disabled={!isEditing}> {/* Disable if not editing */}
+          <FormControl fullWidth variant="outlined" required disabled={!isEditing}>
             <InputLabel id="firm-type-label">Firm Type</InputLabel>
             <Select
               labelId="firm-type-label"
               label="Firm Type"
               name="firmType"
-              disabled={!isEditing} // Disable if not editing
+              value={companyDetails.firmType}
+              onChange={handleInputChange}
+              error={!!error.firmType}
             >
               <MenuItem value="Proprietor">Proprietor</MenuItem>
               <MenuItem value="Partnership">Partnership</MenuItem>
@@ -202,7 +342,6 @@ const FirmDetails = () => {
             </Select>
           </FormControl>
         </Grid>
-        
         <Grid item xs={12} md={6}>
           <TextField
             label="CIN No"
@@ -210,7 +349,11 @@ const FirmDetails = () => {
             required
             fullWidth
             name="cinNumber"
-            disabled={!isEditing} // Disable if not editing
+            value={companyDetails.cinNumber}
+            onChange={handleCinInputChange}
+            error={!!error.cinNumber}
+            helperText={error.cinNumber}
+            disabled={!isEditing}
           />
         </Grid>
       </Grid>

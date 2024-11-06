@@ -24,6 +24,78 @@ function BasicDetails() {
     const [secondaryPhone, setSecondaryPhone] = useState("");
     const [status, setStatus] = useState("");
 
+    const [formErrors, setFormErrors] = useState({
+        name: "",
+        email: "",
+        phone: "",
+        secondaryPhone: "",
+        status: "",
+    });
+
+    // Real-time validation function
+    const validateField = (field, value) => {
+        let error = "";
+
+        switch (field) {
+            case "name":
+                error = /^[A-Za-z\s]+$/.test(value) ? "" : "Name must contain only alphabets and spaces.";
+                break;
+            case "email":
+                // Email validation pattern
+                error = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value)
+                    ? ""
+                    : "Invalid email format.";
+                break;
+            case "phone":
+                error = /^[0-9]{10}$/.test(value) ? "" : "Phone number must be exactly 10 digits.";
+                break;
+            case "secondaryPhone":
+                error = /^[0-9]{10}$/.test(value) || value === "" ? "" : "Secondary phone number must be exactly 10 digits.";
+                break;
+            case "status":
+                error = value === "" ? "Status is required." : "";
+                break;
+            default:
+                break;
+        }
+
+        return error;
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+
+        // Update field value
+        if (name === "name") setName(value);
+        else if (name === "email") setEmail(value);
+        else if (name === "phone") setPhone(value);
+        else if (name === "secondaryPhone") setSecondaryPhone(value);
+        else if (name === "status") setStatus(value);
+
+        // Validate the field in real-time
+        const error = validateField(name, value);
+        setFormErrors((prevErrors) => ({
+            ...prevErrors,
+            [name]: error,
+        }));
+    };
+
+    // Restrict input to only numbers and limit to 10 digits
+    const handlePhoneChange = (e) => {
+        const { name, value } = e.target;
+        if (/[^0-9]/.test(value) || value.length > 10) return;
+
+        if (name === "phone") setPhone(value);
+        else if (name === "secondaryPhone") setSecondaryPhone(value);
+
+        // Validate the field in real-time
+        const error = validateField(name, value);
+        setFormErrors((prevErrors) => ({
+            ...prevErrors,
+            [name]: error,
+        }));
+    };
+
     const handleEditClick = () => {
         setIsEditing(true);
     };
@@ -59,9 +131,12 @@ function BasicDetails() {
                         variant="outlined"
                         required
                         fullWidth
+                        name="name"
                         value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        onChange={handleChange}
                         disabled={!isEditing}
+                        error={!!formErrors.name}
+                        helperText={formErrors.name || "Enter your full name."}
                     />
                 </Grid>
                 <Grid item xs={12} md={6}>
@@ -70,9 +145,12 @@ function BasicDetails() {
                         variant="outlined"
                         required
                         fullWidth
+                        name="email"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={handleChange}
                         disabled={!isEditing}
+                        error={!!formErrors.email}
+                        helperText={formErrors.email || "Enter a valid email address."}
                     />
                 </Grid>
                 <Grid item xs={12} md={6}>
@@ -80,9 +158,12 @@ function BasicDetails() {
                         label="Phone Number"
                         variant="outlined"
                         fullWidth
+                        name="phone"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        onChange={handlePhoneChange} // Use handlePhoneChange for numeric input
                         disabled={!isEditing}
+                        error={!!formErrors.phone}
+                        helperText={formErrors.phone || "Enter a 10-digit phone number."}
                     />
                 </Grid>
                 <Grid item xs={12} md={6}>
@@ -90,9 +171,12 @@ function BasicDetails() {
                         label="Other Phone Number"
                         variant="outlined"
                         fullWidth
+                        name="secondaryPhone"
                         value={secondaryPhone}
-                        onChange={(e) => setSecondaryPhone(e.target.value)}
+                        onChange={handlePhoneChange} // Use handlePhoneChange for numeric input
                         disabled={!isEditing}
+                        error={!!formErrors.secondaryPhone}
+                        helperText={formErrors.secondaryPhone || "Enter a 10-digit phone number or leave blank."}
                     />
                 </Grid>
                 <Grid item xs={12} md={6}>
@@ -102,7 +186,9 @@ function BasicDetails() {
                             labelId="status-label"
                             label="Status"
                             value={status}
-                            onChange={(e) => setStatus(e.target.value)}
+                            onChange={handleChange}
+                            name="status"
+                            error={!!formErrors.status}
                         >
                             <MenuItem value="Active">Active</MenuItem>
                             <MenuItem value="Blocked">Blocked</MenuItem>
@@ -116,7 +202,7 @@ function BasicDetails() {
                         variant="contained"
                         color="primary"
                         onClick={handleSubmitClick}
-                        disabled={loading}
+                        disabled={loading || Object.values(formErrors).some((err) => err !== "")}
                     >
                         {loading ? (
                             <CircularProgress size={24} sx={{ color: 'white' }} />
