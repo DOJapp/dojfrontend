@@ -61,6 +61,66 @@ export const updatePartnerFailure = (payload) => ({
   type: actionTypes.UPDATE_PARTNER_FAILURE,
   payload,
 });
+// Action to update an existing Partner
+export const updatePartnerBankDetails = (id, partnerData) => ({
+  type: actionTypes.UPDATE_PARTNER_BANK_DETAILS,
+  payload: {
+    id, // Include the ID in the payload
+    data: partnerData, // Include the Partner data in the payload
+  },
+});
+
+// Action to indicate successful Partner update
+export const updatePartnerBankDetailsSuccess = (payload) => ({
+  type: actionTypes.UPDATE_PARTNER_BANK_DETAILS_SUCCESS,
+  payload,
+});
+
+// Action to indicate failed Partner update
+export const updatePartnerBankDetailsFailure = (payload) => ({
+  type: actionTypes.UPDATE_PARTNER_BANK_DETAILS_FAILURE,
+  payload,
+});
+// Action to update an existing Partner
+export const updatePartnerBasicDetails = (id, partnerData) => ({
+  type: actionTypes.UPDATE_PARTNER_BASIC_DETAILS,
+  payload: {
+    id, // Include the ID in the payload
+    data: partnerData, // Include the Partner data in the payload
+  },
+});
+
+// Action to indicate successful Partner update
+export const updatePartnerBasicDetailsSuccess = (payload) => ({
+  type: actionTypes.UPDATE_PARTNER_BASIC_DETAILS_SUCCESS,
+  payload,
+});
+
+// Action to indicate failed Partner update
+export const updatePartnerBasicDetailsFailure = (payload) => ({
+  type: actionTypes.UPDATE_PARTNER_BASIC_DETAILS_FAILURE,
+  payload,
+});
+// Action to update an existing Partner
+export const updatePartnerGstDetails = (id, partnerData) => ({
+  type: actionTypes.UPDATE_PARTNER_GST_DETAILS,
+  payload: {
+    id, // Include the ID in the payload
+    data: partnerData, // Include the Partner data in the payload
+  },
+});
+
+// Action to indicate successful Partner update
+export const updatePartnerGstDetailsSuccess = (payload) => ({
+  type: actionTypes.UPDATE_PARTNER_GST_DETAILS_SUCCESS,
+  payload,
+});
+
+// Action to indicate failed Partner update
+export const updatePartnerGstDetailsFailure = (payload) => ({
+  type: actionTypes.UPDATE_PARTNER_GST_DETAILS_FAILURE,
+  payload,
+});
 
 // Action to delete a Partner
 export const deletePartner = (payload) => ({

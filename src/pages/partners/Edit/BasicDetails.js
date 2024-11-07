@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     Grid,
     Paper,
@@ -14,16 +14,19 @@ import {
     MenuItem,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import * as PartnerActions from "../../../redux/Actions/partnerActions.js";
+import { useDispatch, useSelector } from "react-redux";
+import Swal from "sweetalert2";
 
-function BasicDetails() {
+const BasicDetails = ({ partner }) => {
     const [isEditing, setIsEditing] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [phone, setPhone] = useState("");
-    const [secondaryPhone, setSecondaryPhone] = useState("");
-    const [status, setStatus] = useState("");
-
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        phone: "",
+        secondaryPhone: "",
+        status: "",
+    });
     const [formErrors, setFormErrors] = useState({
         name: "",
         email: "",
@@ -32,84 +35,113 @@ function BasicDetails() {
         status: "",
     });
 
-    // Real-time validation function
-    const validateField = (field, value) => {
-        let error = "";
+    const dispatch = useDispatch();
+    const { success, error, loading: reduxLoading } = useSelector((state) => state.partner);
 
+    // Set form data when partner props change
+    useEffect(() => {
+        if (partner) {
+            setFormData({
+                name: partner.name || "",
+                email: partner.email || "",
+                phone: partner.phone || "",
+                secondaryPhone: partner.secondaryPhone || "",
+                status: partner.status || "",
+            });
+        }
+    }, [partner]);
+
+    // Handle success or error from API
+    useEffect(() => {
+        if (success) {
+            Swal.fire("Success!", "Details updated successfully.", "success");
+            setIsEditing(false);
+        } else if (error) {
+            Swal.fire("Error!", "Failed to update details.", "error");
+        }
+    }, [success, error]);
+
+    // Validate each form field
+    const validate = (field, value) => {
         switch (field) {
             case "name":
-                error = /^[A-Za-z\s]+$/.test(value) ? "" : "Name must contain only alphabets and spaces.";
-                break;
+                return /^[A-Za-z\s]+$/.test(value) ? "" : "Name must contain only alphabets and spaces.";
             case "email":
-                // Email validation pattern
-                error = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value)
-                    ? ""
-                    : "Invalid email format.";
-                break;
+                return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value) ? "" : "Invalid email format.";
             case "phone":
-                error = /^[0-9]{10}$/.test(value) ? "" : "Phone number must be exactly 10 digits.";
-                break;
             case "secondaryPhone":
-                error = /^[0-9]{10}$/.test(value) || value === "" ? "" : "Secondary phone number must be exactly 10 digits.";
-                break;
+                return value ? "" : "This field is required.";
             case "status":
-                error = value === "" ? "Status is required." : "";
-                break;
+                return value ? "" : "Status is required.";
             default:
-                break;
+                return "";
+        }
+    };
+
+    // Corrected phone number change handler
+    const handlePhoneChange = (e) => {
+        const { name, value } = e.target;
+
+        // Prevent non-numeric characters and update the value
+        if (!/^[0-9]*$/.test(value)) {
+            e.preventDefault();
+            return; // Stop non-numeric input
         }
 
-        return error;
+        // Limit the input to a max length of 10 characters
+        if (value.length <= 10) {
+            setFormData((prevData) => ({ ...prevData, [name]: value }));
+
+            // Validate the input
+            const error = validate(name, value);
+            setFormErrors((prevErrors) => ({
+                ...prevErrors,
+                [name]: error,
+            }));
+        }
     };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-
-        // Update field value
-        if (name === "name") setName(value);
-        else if (name === "email") setEmail(value);
-        else if (name === "phone") setPhone(value);
-        else if (name === "secondaryPhone") setSecondaryPhone(value);
-        else if (name === "status") setStatus(value);
-
-        // Validate the field in real-time
-        const error = validateField(name, value);
-        setFormErrors((prevErrors) => ({
-            ...prevErrors,
-            [name]: error,
-        }));
+        setFormData({ ...formData, [name]: value });
+        setFormErrors({ ...formErrors, [name]: validate(name, value) });
     };
 
-    // Restrict input to only numbers and limit to 10 digits
-    const handlePhoneChange = (e) => {
-        const { name, value } = e.target;
-        if (/[^0-9]/.test(value) || value.length > 10) return;
-
-        if (name === "phone") setPhone(value);
-        else if (name === "secondaryPhone") setSecondaryPhone(value);
-
-        // Validate the field in real-time
-        const error = validateField(name, value);
-        setFormErrors((prevErrors) => ({
-            ...prevErrors,
-            [name]: error,
-        }));
-    };
-
+    // Toggle edit mode
     const handleEditClick = () => {
         setIsEditing(true);
     };
 
+    // Submit form data to redux action
     const handleSubmitClick = () => {
-        setLoading(true);
-        setTimeout(() => {
-            setLoading(false);
-            setIsEditing(false);
-        }, 2000);
+        const updatedFormData = {
+            ...formData,
+            phone: formData.phone.toString(),
+            secondaryPhone: formData.secondaryPhone ? formData.secondaryPhone.toString() : "",
+        };
+        dispatch(PartnerActions.updatePartnerBasicDetails(partner._id, updatedFormData));
     };
 
+    // Render form field
+    const renderField = (label, name, helperText, isRequired = false) => (
+        <Grid item xs={12} md={6}>
+            <TextField
+                label={label}
+                variant="outlined"
+                fullWidth
+                required={isRequired}
+                name={name}
+                value={formData[name]}
+                onChange={name.includes("phone") || name.includes("secondaryPhone") ? handlePhoneChange : handleChange}
+                disabled={!isEditing}
+                error={!!formErrors[name]}
+                helperText={formErrors[name] || helperText}
+            />
+        </Grid>
+    );
+
     return (
-        <Paper spacing={2} elevation={3} style={{ padding: "20px", position: "relative", margin: "20px 0px" }}>
+        <Paper elevation={3} style={{ padding: "20px", margin: "20px 0px" }}>
             <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Typography variant="h6" gutterBottom>
                     Basic Details
@@ -125,70 +157,19 @@ function BasicDetails() {
                 )}
             </Box>
             <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
-                    <TextField
-                        label="Name"
-                        variant="outlined"
-                        required
-                        fullWidth
-                        name="name"
-                        value={name}
-                        onChange={handleChange}
-                        disabled={!isEditing}
-                        error={!!formErrors.name}
-                        helperText={formErrors.name || "Enter your full name."}
-                    />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                    <TextField
-                        label="Email"
-                        variant="outlined"
-                        required
-                        fullWidth
-                        name="email"
-                        value={email}
-                        onChange={handleChange}
-                        disabled={!isEditing}
-                        error={!!formErrors.email}
-                        helperText={formErrors.email || "Enter a valid email address."}
-                    />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                    <TextField
-                        label="Phone Number"
-                        variant="outlined"
-                        fullWidth
-                        name="phone"
-                        value={phone}
-                        onChange={handlePhoneChange} // Use handlePhoneChange for numeric input
-                        disabled={!isEditing}
-                        error={!!formErrors.phone}
-                        helperText={formErrors.phone || "Enter a 10-digit phone number."}
-                    />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                    <TextField
-                        label="Other Phone Number"
-                        variant="outlined"
-                        fullWidth
-                        name="secondaryPhone"
-                        value={secondaryPhone}
-                        onChange={handlePhoneChange} // Use handlePhoneChange for numeric input
-                        disabled={!isEditing}
-                        error={!!formErrors.secondaryPhone}
-                        helperText={formErrors.secondaryPhone || "Enter a 10-digit phone number or leave blank."}
-                    />
-                </Grid>
+                {renderField("Name", "name", "Enter your full name.", true)}
+                {renderField("Email", "email", "Enter a valid email address.", true)}
+                {renderField("Phone Number", "phone", "Enter a 10-digit phone number.", true)}
+                {renderField("Other Phone Number", "secondaryPhone", "Enter a 10-digit phone number or leave blank.")}
                 <Grid item xs={12} md={6}>
                     <FormControl fullWidth variant="outlined" required disabled={!isEditing}>
-                        <InputLabel id="status-label">Status</InputLabel>
+                        <InputLabel>Status</InputLabel>
                         <Select
-                            labelId="status-label"
-                            label="Status"
-                            value={status}
+                            value={formData.status}
                             onChange={handleChange}
                             name="status"
                             error={!!formErrors.status}
+                            label="Status"
                         >
                             <MenuItem value="Active">Active</MenuItem>
                             <MenuItem value="Blocked">Blocked</MenuItem>
@@ -202,18 +183,14 @@ function BasicDetails() {
                         variant="contained"
                         color="primary"
                         onClick={handleSubmitClick}
-                        disabled={loading || Object.values(formErrors).some((err) => err !== "")}
+                        disabled={reduxLoading || Object.values(formErrors).some((err) => err)}
                     >
-                        {loading ? (
-                            <CircularProgress size={24} sx={{ color: 'white' }} />
-                        ) : (
-                            "Submit"
-                        )}
+                        {reduxLoading ? <CircularProgress size={24} sx={{ color: "white" }} /> : "Submit"}
                     </Button>
                 </Box>
             )}
         </Paper>
     );
-}
+};
 
 export default BasicDetails;

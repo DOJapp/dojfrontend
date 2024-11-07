@@ -61,7 +61,6 @@ class _ApiRequest {
 
   // Method to make PUT requests
   putRequest = async ({ url = null, data = null, header = "form" }) => {
-
     try {
       const token = getAccessToken(); // Get access token
       const response = await axios({

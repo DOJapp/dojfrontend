@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Grid,
   Paper,
@@ -16,7 +16,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import FileUpload from "../../../Components/FileUpload";
 
-const FirmDetails = () => {
+const FirmDetails = ({ partner, isLoading }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [partnerState, setPartnerState] = useState({ loading: false });
   const [companyDetails, setCompanyDetails] = useState({
@@ -41,6 +41,22 @@ const FirmDetails = () => {
     firmType: "",
     cinNumber: "",
   });
+
+  useEffect(() => {
+    if (partner) {
+      setCompanyDetails({
+        panNumber: partner.panNumber || "",
+        aadharNumber: partner.aadharNumber || "",
+        firmName: partner.firmName || "",
+        firmAddress: partner.firmAddress || "",
+        panImage: partner.panImage || null,
+        aadharFrontImage: partner.aadharFrontImage || null,
+        aadharBackImage: partner.aadharBackImage || null,
+        firmType: partner.firmType || "",
+        cinNumber: partner.cinNumber || "",
+      });
+    }
+  }, [partner]);
 
   const validateField = (field, value) => {
     let errorMessage = "";
@@ -71,7 +87,7 @@ const FirmDetails = () => {
       case "cinNumber":
         errorMessage = /^[A-Z]{1}[A-Z0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}$/.test(value)
           ? ""
-          : "CIN Number must be valid.";
+          : "CIN Number must be valid. in the format L17110MH1973PLC019786.";
         break;
       default:
         break;
@@ -125,12 +141,14 @@ const FirmDetails = () => {
   };
 
   const handleKeyDown = (e, fieldName) => {
+    const allowedKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"];
+
     if (fieldName === "panNumber") {
-      if (!/[A-Za-z0-9]/.test(e.key)) {
+      if (!/[A-Za-z0-9]/.test(e.key) && !allowedKeys.includes(e.key)) {
         e.preventDefault();
       }
     } else if (fieldName === "aadharNumber") {
-      if (!/[0-9]/.test(e.key)) {
+      if (!/[0-9]/.test(e.key) && !allowedKeys.includes(e.key)) {
         e.preventDefault();
       }
     }
@@ -168,7 +186,7 @@ const FirmDetails = () => {
       formattedValue.slice(1, 6).replace(/[^0-9]/g, "") +
       formattedValue.slice(6, 8).replace(/[^A-Za-z]/g, "") +
       formattedValue.slice(8, 12).replace(/[^0-9]/g, "") +
-      formattedValue.slice(12, 15).replace(/[^A-Za-z]/g, "")+
+      formattedValue.slice(12, 15).replace(/[^A-Za-z]/g, "") +
       formattedValue.slice(15, 21).replace(/[^0-9]/g, "")
     );
   };
@@ -186,13 +204,13 @@ const FirmDetails = () => {
 
   const handlePanInputChange = (e) => {
     const { value } = e.target;
-    const formattedPanValue = formatPanNumber(value); // format PAN number
+    const formattedPanValue = formatPanNumber(value);
     setCompanyDetails((prev) => ({
       ...prev,
       panNumber: formattedPanValue,
     }));
 
-    const panErrorMessage = validateField("panNumber", formattedPanValue); // Validate PAN number
+    const panErrorMessage = validateField("panNumber", formattedPanValue);
     setError((prev) => ({
       ...prev,
       panNumber: panErrorMessage, // Set PAN error
@@ -201,7 +219,7 @@ const FirmDetails = () => {
 
   const handleCinInputChange = (e) => {
     const { value } = e.target;
-    const formattedCinValue = formatCinNumber(value); // format CIN number
+    const formattedCinValue = formatCinNumber(value);
     setCompanyDetails((prev) => ({
       ...prev,
       cinNumber: formattedCinValue,
@@ -224,136 +242,126 @@ const FirmDetails = () => {
           <IconButton
             aria-label="edit"
             onClick={handleEditClick}
-            style={{ border: "1px solid red", marginBottom: "20px" }}
+            style={{ marginLeft: "10px", color: "#4f83cc" }}
           >
             <EditIcon />
           </IconButton>
         )}
       </Box>
+
       <Grid container spacing={2}>
         <Grid item xs={12} md={6}>
           <TextField
+            fullWidth
             label="PAN Number"
             variant="outlined"
-            required
-            fullWidth
             name="panNumber"
             value={companyDetails.panNumber}
+            disabled={!isEditing}
             onChange={handlePanInputChange}
             onKeyDown={(e) => handleKeyDown(e, "panNumber")}
             error={!!error.panNumber}
             helperText={error.panNumber}
-            inputProps={{ maxLength: 10 }}
-            disabled={!isEditing}
+            inputProps={{ maxLength: 10 }
+            }
           />
         </Grid>
         <Grid item xs={12} md={6}>
           <TextField
+            fullWidth
             label="Aadhar Number"
             variant="outlined"
-            required
-            fullWidth
             name="aadharNumber"
+            disabled={!isEditing}
             value={companyDetails.aadharNumber}
             onChange={handleInputChange}
             onKeyDown={(e) => handleKeyDown(e, "aadharNumber")}
             error={!!error.aadharNumber}
             helperText={error.aadharNumber}
             inputProps={{ maxLength: 12 }}
-            disabled={!isEditing}
           />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <FileUpload
-            label="Upload PAN Image"
-            preview={companyDetails.panImage}
-            error={!!error.panImage}
-            helperText={error.panImage}
-            onChange={(e) => handleFileChange(e, "panImage")}
-            disabled={!isEditing}
-          />
-        </Grid>
-        <Grid item container xs={12} md={6}>
-          <Grid item xs={12} md={6}>
-            <FileUpload
-              label="Aadhar Front"
-              preview={companyDetails.aadharFrontImage}
-              error={!!error.aadharFrontImage}
-              helperText={error.aadharFrontImage}
-              onChange={(e) => handleFileChange(e, "aadharFrontImage")}
-              disabled={!isEditing}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <FileUpload
-              label="Aadhar Back"
-              preview={companyDetails.aadharBackImage}
-              error={!!error.aadharBackImage}
-              helperText={error.aadharBackImage}
-              onChange={(e) => handleFileChange(e, "aadharBackImage")}
-              disabled={!isEditing}
-            />
-          </Grid>
         </Grid>
         <Grid item xs={12} md={6}>
           <TextField
+            fullWidth
             label="Firm Name"
             variant="outlined"
-            required
-            fullWidth
             name="firmName"
+            disabled={!isEditing}
             value={companyDetails.firmName}
             onChange={handleInputChange}
             error={!!error.firmName}
             helperText={error.firmName}
-            disabled={!isEditing}
           />
         </Grid>
         <Grid item xs={12} md={6}>
           <TextField
+            fullWidth
             label="Firm Address"
             variant="outlined"
-            required
-            fullWidth
             name="firmAddress"
+            disabled={!isEditing}
             value={companyDetails.firmAddress}
             onChange={handleInputChange}
             error={!!error.firmAddress}
             helperText={error.firmAddress}
-            disabled={!isEditing}
           />
         </Grid>
         <Grid item xs={12} md={6}>
-          <FormControl fullWidth variant="outlined" required disabled={!isEditing}>
-            <InputLabel id="firm-type-label">Firm Type</InputLabel>
+          <FormControl fullWidth variant="outlined">
+            <InputLabel>Firm Type</InputLabel>
             <Select
-              labelId="firm-type-label"
               label="Firm Type"
               name="firmType"
+              disabled={!isEditing}
               value={companyDetails.firmType}
               onChange={handleInputChange}
               error={!!error.firmType}
             >
+              <MenuItem value="">Select Firm Type</MenuItem>
               <MenuItem value="Proprietor">Proprietor</MenuItem>
-              <MenuItem value="Partnership">Partnership</MenuItem>
-              <MenuItem value="LLP">LLP</MenuItem>
-              <MenuItem value="PVT LTD">PVT LTD</MenuItem>
-              <MenuItem value="Limited">Limited</MenuItem>
+              <MenuItem value="Company">Company</MenuItem>
             </Select>
           </FormControl>
         </Grid>
         <Grid item xs={12} md={6}>
           <TextField
-            label="CIN No"
-            variant="outlined"
-            required
             fullWidth
+            label="CIN Number"
+            variant="outlined"
             name="cinNumber"
+            disabled={!isEditing}
             value={companyDetails.cinNumber}
             onChange={handleCinInputChange}
             error={!!error.cinNumber}
             helperText={error.cinNumber}
-            disabled={!isEditing}
+          />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <FileUpload
+            label="Pan Image"
+            file={companyDetails.panImage}
+            onFileChange={(e) => handleFileChange(e, "panImage")}
+            error={error.panImage}
+            preview={companyDetails.panImage}
+          />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <FileUpload
+            label="Aadhar Front Image"
+            file={companyDetails.aadharFrontImage}
+            onFileChange={(e) => handleFileChange(e, "aadharFrontImage")}
+            error={error.aadharFrontImage}
+            preview={companyDetails.aadharFrontImage}
+          />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <FileUpload
+            label="Aadhar Back Image"
+            file={companyDetails.aadharBackImage}
+            onFileChange={(e) => handleFileChange(e, "aadharBackImage")}
+            error={error.aadharBackImage}
+            preview={companyDetails.aadharBackImage}
           />
         </Grid>
       </Grid>
@@ -365,10 +373,11 @@ const FirmDetails = () => {
             onClick={handleSubmitClick}
             disabled={partnerState.loading}
           >
-            {partnerState.loading ? <CircularProgress size={24} /> : "Submit"}
+            {isLoading ? <CircularProgress size={24} /> : "Save"}
           </Button>
         </Box>
       )}
+
     </Paper>
   );
 };

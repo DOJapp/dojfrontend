@@ -280,12 +280,13 @@ const AddPartner = () => {
   };
   // Handle form submission
   const handleSubmit = async () => {
-    const validationErrors = validateForm();
-    if (Object.keys(validationErrors).length > 0) {
-      setError(validationErrors);
-      return;
-    }
-
+   
+    // const validationErrors = validateForm();
+    // if (Object.keys(validationErrors).length > 0) {
+    //   setError(validationErrors);
+    //   return;
+    // }
+    console.log("ctesf",error);
     let formData;
     if (companyDetails.gstSelected === "No") {
       formData = {
@@ -330,6 +331,7 @@ const AddPartner = () => {
       };
     }
     // Send formData to API
+    console.log(formData);
     dispatch(createPartner(formData));
   };
 
