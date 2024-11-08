@@ -35,6 +35,8 @@ const partnerReducer = (state = initialState, action) => {
     case actionTypes.UPDATE_PARTNER_BANK_DETAILS:
     case actionTypes.UPDATE_PARTNER_BASIC_DETAILS:
     case actionTypes.UPDATE_PARTNER_GST_DETAILS:
+    case actionTypes.UPDATE_PARTNER_FIRM_DETAILS:
+    case actionTypes.UPDATE_PARTNER_DETAILS:
     case actionTypes.DELETE_PARTNER:
       return {
         ...state,
@@ -104,6 +106,28 @@ const partnerReducer = (state = initialState, action) => {
         error: null,
         success: true, // Indicate success
       };
+    case actionTypes.UPDATE_PARTNER_FIRM_DETAILS_SUCCESS:
+      return {
+        ...state,
+        partners: state.partners.map((partner) =>
+          partner._id === payload._id ? payload : partner
+        ),
+        partner: payload,
+        loading: false,
+        error: null,
+        success: true, // Indicate success
+      };
+    case actionTypes.UPDATE_PARTNER_DETAILS_SUCCESS:
+      return {
+        ...state,
+        partners: state.partners.map((partner) =>
+          partner._id === payload._id ? payload : partner
+        ),
+        partner: payload,
+        loading: false,
+        error: null,
+        success: true, // Indicate success
+      };
 
     case actionTypes.UPDATE_PARTNER_FAILURE:
       return {
@@ -125,10 +149,24 @@ const partnerReducer = (state = initialState, action) => {
         ...state,
         loading: false,
         error: payload,
-        success: false, 
+        success: false,
       };
 
     case actionTypes.UPDATE_PARTNER_BASIC_DETAILS_FAILURE:
+      return {
+        ...state,
+        loading: false,
+        error: payload,
+        success: false,
+      };
+    case actionTypes.UPDATE_PARTNER_FIRM_DETAILS_FAILURE:
+      return {
+        ...state,
+        loading: false,
+        error: payload,
+        success: false,
+      };
+    case actionTypes.UPDATE_PARTNER_DETAILS_FAILURE:
       return {
         ...state,
         loading: false,

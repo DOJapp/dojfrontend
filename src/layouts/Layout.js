@@ -8,7 +8,6 @@ import * as Actions from '../redux/Actions/dashboardActions';
 
 const Layout = ({ dispatch, isSidebarOpen }) => {
 
-  // console.log("isSidebarOpen",isSidebarOpen);
 
   const handleClickOutside = () => {
     dispatch(Actions.setIsSidebarOpen(!isSidebarOpen));

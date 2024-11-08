@@ -101,6 +101,7 @@ export const updatePartnerBasicDetailsFailure = (payload) => ({
   type: actionTypes.UPDATE_PARTNER_BASIC_DETAILS_FAILURE,
   payload,
 });
+
 // Action to update an existing Partner
 export const updatePartnerGstDetails = (id, partnerData) => ({
   type: actionTypes.UPDATE_PARTNER_GST_DETAILS,
@@ -119,6 +120,48 @@ export const updatePartnerGstDetailsSuccess = (payload) => ({
 // Action to indicate failed Partner update
 export const updatePartnerGstDetailsFailure = (payload) => ({
   type: actionTypes.UPDATE_PARTNER_GST_DETAILS_FAILURE,
+  payload,
+});
+
+// Action to update an existing Partner
+export const updatePartnerFirmDetails = (id, partnerData) => ({
+  type: actionTypes.UPDATE_PARTNER_FIRM_DETAILS,
+  payload: {
+    id, 
+    data: partnerData, 
+  },
+});
+
+// Action to indicate successful Partner update
+export const updatePartnerFirmDetailsSuccess = (payload) => ({
+  type: actionTypes.UPDATE_PARTNER_FIRM_DETAILS_SUCCESS,
+  payload,
+});
+
+// Action to indicate failed Partner update
+export const updatePartnerFirmDetailsFailure = (payload) => ({
+  type: actionTypes.UPDATE_PARTNER_FIRM_DETAILS_FAILURE,
+  payload,
+});
+
+// Action to update an existing Partner
+export const updatePartnerDetails = (id, partnerData) => ({
+  type: actionTypes.UPDATE_PARTNER_DETAILS,
+  payload: {
+    id, 
+    data: partnerData, 
+  },
+});
+
+// Action to indicate successful Partner update
+export const updatePartnerDetailsSuccess = (payload) => ({
+  type: actionTypes.UPDATE_PARTNER_DETAILS_SUCCESS,
+  payload,
+});
+
+// Action to indicate failed Partner update
+export const updatePartnerDetailsFailure = (payload) => ({
+  type: actionTypes.UPDATE_PARTNER_DETAILS_FAILURE,
   payload,
 });
 

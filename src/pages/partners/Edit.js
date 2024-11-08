@@ -10,33 +10,23 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
 function Edit({ dispatch, partner, loading, error }) {
-  const { id } = useParams(); // Getting partner ID from URL
+  const { id } = useParams();
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Function to fetch partner details by ID
     const fetchPartnerDetails = async () => {
       setIsLoading(true);
       try {
-        await dispatch(PartnerActions.getPartnerById(id)); // Dispatch the action to fetch partner by ID
+        await dispatch(PartnerActions.getPartnerById(id));
       } catch (error) {
-        Swal.fire('Error!', 'Failed to fetch Partner details.', 'error'); // Show error if fetching fails
+        Swal.fire('Error!', 'Failed to fetch Partner details.', 'error');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchPartnerDetails();
-  }, [id, dispatch]); // Re-fetch when ID changes or dispatch changes
-
-  // Handle loading or error states
-  if (isLoading || loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error.message}</div>;
-  }
+  }, [id, dispatch]); 
 
   return (
     <>
@@ -49,7 +39,6 @@ function Edit({ dispatch, partner, loading, error }) {
   );
 }
 
-// Map the necessary Redux state to props
 const mapStateToProps = (state) => ({
   partner: state.partner.partner,
   loading: state.partner.loading,

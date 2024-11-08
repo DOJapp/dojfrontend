@@ -15,10 +15,12 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import FileUpload from "../../../Components/FileUpload";
+import { useDispatch, useSelector } from 'react-redux';
+import Swal from 'sweetalert2';
+import * as PartnerActions from "../../../redux/Actions/partnerActions.js";
 
-const FirmDetails = ({ partner, isLoading }) => {
+const FirmDetails = ({ partner }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [partnerState, setPartnerState] = useState({ loading: false });
   const [companyDetails, setCompanyDetails] = useState({
     panNumber: "",
     aadharNumber: "",
@@ -30,7 +32,8 @@ const FirmDetails = ({ partner, isLoading }) => {
     firmType: "",
     cinNumber: "",
   });
-  const [error, setError] = useState({
+
+  const [fieldErrors, setFieldErrors] = useState({
     panNumber: "",
     aadharNumber: "",
     firmName: "",
@@ -41,6 +44,10 @@ const FirmDetails = ({ partner, isLoading }) => {
     firmType: "",
     cinNumber: "",
   });
+
+  const dispatch = useDispatch();
+  const { success, error, loading: reduxLoading } = useSelector((state) => state.partner);
+
 
   useEffect(() => {
     if (partner) {
@@ -57,6 +64,16 @@ const FirmDetails = ({ partner, isLoading }) => {
       });
     }
   }, [partner]);
+
+  useEffect(() => {
+    if (success) {
+      Swal.fire('Success', 'Firm Details updated successfully', 'success');
+      setIsEditing(false);
+    }
+    if (error) {
+      Swal.fire('Error', error, 'error');
+    }
+  }, [success, error]);
 
   const validateField = (field, value) => {
     let errorMessage = "";
@@ -87,13 +104,14 @@ const FirmDetails = ({ partner, isLoading }) => {
       case "cinNumber":
         errorMessage = /^[A-Z]{1}[A-Z0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}$/.test(value)
           ? ""
-          : "CIN Number must be valid. in the format L17110MH1973PLC019786.";
+          : "CIN Number must be valid in the format L17110MH1973PLC019786.";
         break;
       default:
         break;
     }
     return errorMessage;
   };
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -103,7 +121,7 @@ const FirmDetails = ({ partner, isLoading }) => {
     }));
 
     const errorMessage = validateField(name, value);
-    setError((prev) => ({
+    setFieldErrors((prev) => ({
       ...prev,
       [name]: errorMessage,
     }));
@@ -133,116 +151,60 @@ const FirmDetails = ({ partner, isLoading }) => {
   };
 
   const handleSubmitClick = () => {
-    setPartnerState({ loading: true });
-    setTimeout(() => {
-      setPartnerState({ loading: false });
-      setIsEditing(false);
-    }, 2000);
+    const formData = new FormData();
+
+    for (const [key, value] of Object.entries(companyDetails)) {
+      formData.append(key, value || '');
+    }
+    console.log("formData",formData)
+
+    dispatch(PartnerActions.updatePartnerFirmDetails(partner._id, formData));
   };
 
   const handleKeyDown = (e, fieldName) => {
     const allowedKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"];
-
-    if (fieldName === "panNumber") {
-      if (!/[A-Za-z0-9]/.test(e.key) && !allowedKeys.includes(e.key)) {
-        e.preventDefault();
-      }
-    } else if (fieldName === "aadharNumber") {
-      if (!/[0-9]/.test(e.key) && !allowedKeys.includes(e.key)) {
-        e.preventDefault();
-      }
+    if (fieldName === "panNumber" && !/[A-Za-z0-9]/.test(e.key) && !allowedKeys.includes(e.key)) {
+      e.preventDefault();
+    } else if (fieldName === "aadharNumber" && !/[0-9]/.test(e.key) && !allowedKeys.includes(e.key)) {
+      e.preventDefault();
     }
-  };
-
-  const formatCinNumber = (value) => {
-    let formattedValue = value.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
-    const length = formattedValue.length;
-    if (length <= 1) {
-      return formattedValue.slice(0, 1);
-    }
-    if (length <= 6) {
-      return (
-        formattedValue.slice(0, 1) +
-        formattedValue.slice(1, 6).replace(/[^0-9]/g, "")
-      );
-    }
-    if (length <= 8) {
-      return (
-        formattedValue.slice(0, 1) +
-        formattedValue.slice(1, 6).replace(/[^0-9]/g, "") +
-        formattedValue.slice(6, 8).replace(/[^A-Za-z]/g, "")
-      );
-    }
-    if (length <= 12) {
-      return (
-        formattedValue.slice(0, 1) +
-        formattedValue.slice(1, 6).replace(/[^0-9]/g, "") +
-        formattedValue.slice(6, 8).replace(/[^A-Za-z]/g, "") +
-        formattedValue.slice(8, 12).replace(/[^0-9]/g, "")
-      );
-    }
-    return (
-      formattedValue.slice(0, 1) +
-      formattedValue.slice(1, 6).replace(/[^0-9]/g, "") +
-      formattedValue.slice(6, 8).replace(/[^A-Za-z]/g, "") +
-      formattedValue.slice(8, 12).replace(/[^0-9]/g, "") +
-      formattedValue.slice(12, 15).replace(/[^A-Za-z]/g, "") +
-      formattedValue.slice(15, 21).replace(/[^0-9]/g, "")
-    );
-  };
-
-  const formatPanNumber = (value) => {
-    let formattedValue = value.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
-    if (formattedValue.length <= 5) {
-      return formattedValue.replace(/[^A-Za-z]/g, '');
-    }
-    if (formattedValue.length <= 9) {
-      return formattedValue.slice(0, 5) + formattedValue.slice(5).replace(/[^0-9]/g, '');
-    }
-    return formattedValue.slice(0, 5) + formattedValue.slice(5, 9).replace(/[^0-9]/g, '') + formattedValue.slice(9, 10).replace(/[^A-Za-z]/g, '');
   };
 
   const handlePanInputChange = (e) => {
-    const { value } = e.target;
-    const formattedPanValue = formatPanNumber(value);
+    const formattedValue = e.target.value.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
     setCompanyDetails((prev) => ({
       ...prev,
-      panNumber: formattedPanValue,
+      panNumber: formattedValue,
     }));
-
-    const panErrorMessage = validateField("panNumber", formattedPanValue);
-    setError((prev) => ({
+    const errorMessage = validateField("panNumber", formattedValue);
+    setFieldErrors((prev) => ({
       ...prev,
-      panNumber: panErrorMessage, // Set PAN error
+      panNumber: errorMessage,
     }));
   };
 
   const handleCinInputChange = (e) => {
-    const { value } = e.target;
-    const formattedCinValue = formatCinNumber(value);
+    const formattedValue = e.target.value.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
     setCompanyDetails((prev) => ({
       ...prev,
-      cinNumber: formattedCinValue,
+      cinNumber: formattedValue,
     }));
-
-    const cinErrorMessage = validateField("cinNumber", formattedCinValue); // Validate CIN number
-    setError((prev) => ({
+    const errorMessage = validateField("cinNumber", formattedValue);
+    setFieldErrors((prev) => ({
       ...prev,
-      cinNumber: cinErrorMessage, // Set CIN error
+      cinNumber: errorMessage,
     }));
   };
 
   return (
-    <Paper spacing={2} elevation={3} style={{ padding: "20px", position: "relative", margin: "20px 0px" }}>
+    <Paper elevation={3} style={{ padding: "20px", margin: "20px 0" }}>
       <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Typography variant="h6" gutterBottom>
-          Firm Details
-        </Typography>
+        <Typography variant="h6" mb={2}>Firm Details</Typography>
         {!isEditing && (
           <IconButton
             aria-label="edit"
             onClick={handleEditClick}
-            style={{ marginLeft: "10px", color: "#4f83cc" }}
+            sx={{ border: '1px solid red', mb: 2 }}
           >
             <EditIcon />
           </IconButton>
@@ -260,10 +222,9 @@ const FirmDetails = ({ partner, isLoading }) => {
             disabled={!isEditing}
             onChange={handlePanInputChange}
             onKeyDown={(e) => handleKeyDown(e, "panNumber")}
-            error={!!error.panNumber}
-            helperText={error.panNumber}
-            inputProps={{ maxLength: 10 }
-            }
+            error={!!fieldErrors.panNumber}
+            helperText={fieldErrors.panNumber}
+            inputProps={{ maxLength: 10 }}
           />
         </Grid>
         <Grid item xs={12} md={6}>
@@ -276,8 +237,8 @@ const FirmDetails = ({ partner, isLoading }) => {
             value={companyDetails.aadharNumber}
             onChange={handleInputChange}
             onKeyDown={(e) => handleKeyDown(e, "aadharNumber")}
-            error={!!error.aadharNumber}
-            helperText={error.aadharNumber}
+            error={!!fieldErrors.aadharNumber}
+            helperText={fieldErrors.aadharNumber}
             inputProps={{ maxLength: 12 }}
           />
         </Grid>
@@ -290,8 +251,8 @@ const FirmDetails = ({ partner, isLoading }) => {
             disabled={!isEditing}
             value={companyDetails.firmName}
             onChange={handleInputChange}
-            error={!!error.firmName}
-            helperText={error.firmName}
+            error={!!fieldErrors.firmName}
+            helperText={fieldErrors.firmName}
           />
         </Grid>
         <Grid item xs={12} md={6}>
@@ -303,25 +264,55 @@ const FirmDetails = ({ partner, isLoading }) => {
             disabled={!isEditing}
             value={companyDetails.firmAddress}
             onChange={handleInputChange}
-            error={!!error.firmAddress}
-            helperText={error.firmAddress}
+            error={!!fieldErrors.firmAddress}
+            helperText={fieldErrors.firmAddress}
           />
         </Grid>
         <Grid item xs={12} md={6}>
-          <FormControl fullWidth variant="outlined">
-            <InputLabel>Firm Type</InputLabel>
+          <FileUpload
+            label="PAN Image"
+            disabled={!isEditing}
+            onChange={(e) => handleFileChange(e, "panImage")}
+            error={fieldErrors.panImage || ""}
+            preview={companyDetails?.panImage}
+          />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <FileUpload
+            label="Aadhar Front Image"
+            disabled={!isEditing}
+            onChange={(e) => handleFileChange(e, "aadharFrontImage")}
+            error={fieldErrors.aadharFrontImage || ""}
+            preview={companyDetails?.aadharFrontImage}
+          />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <FileUpload
+            label="Aadhar Back Image"
+            disabled={!isEditing}
+            onChange={(e) => handleFileChange(e, "aadharBackImage")}
+            error={fieldErrors.aadharBackImage || ""}
+            preview={companyDetails?.aadharBackImage}
+
+          />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <FormControl fullWidth error={!!fieldErrors.firmType}>
+            <InputLabel id="firm-type-label">Firm Type</InputLabel>
             <Select
-              label="Firm Type"
+              labelId="firm-type-label"
               name="firmType"
-              disabled={!isEditing}
               value={companyDetails.firmType}
+              disabled={!isEditing}
               onChange={handleInputChange}
-              error={!!error.firmType}
+              label="Firm Type"
             >
-              <MenuItem value="">Select Firm Type</MenuItem>
               <MenuItem value="Proprietor">Proprietor</MenuItem>
-              <MenuItem value="Company">Company</MenuItem>
+              <MenuItem value="Partnership">Partnership</MenuItem>
+              <MenuItem value="LLP">LLP</MenuItem>
+              <MenuItem value="Private Limited">Private Limited</MenuItem>
             </Select>
+            <Typography color="error">{fieldErrors.firmType}</Typography>
           </FormControl>
         </Grid>
         <Grid item xs={12} md={6}>
@@ -330,54 +321,29 @@ const FirmDetails = ({ partner, isLoading }) => {
             label="CIN Number"
             variant="outlined"
             name="cinNumber"
-            disabled={!isEditing}
             value={companyDetails.cinNumber}
+            disabled={!isEditing}
             onChange={handleCinInputChange}
-            error={!!error.cinNumber}
-            helperText={error.cinNumber}
-          />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <FileUpload
-            label="Pan Image"
-            file={companyDetails.panImage}
-            onFileChange={(e) => handleFileChange(e, "panImage")}
-            error={error.panImage}
-            preview={companyDetails.panImage}
-          />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <FileUpload
-            label="Aadhar Front Image"
-            file={companyDetails.aadharFrontImage}
-            onFileChange={(e) => handleFileChange(e, "aadharFrontImage")}
-            error={error.aadharFrontImage}
-            preview={companyDetails.aadharFrontImage}
-          />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <FileUpload
-            label="Aadhar Back Image"
-            file={companyDetails.aadharBackImage}
-            onFileChange={(e) => handleFileChange(e, "aadharBackImage")}
-            error={error.aadharBackImage}
-            preview={companyDetails.aadharBackImage}
+            error={!!fieldErrors.cinNumber}
+            helperText={fieldErrors.cinNumber}
+            inputProps={{ maxLength: 21 }}
           />
         </Grid>
       </Grid>
+
       {isEditing && (
-        <Box display="flex" justifyContent="flex-end" marginTop="20px">
+        <Box mt={2} display="flex" justifyContent="flex-end">
           <Button
             variant="contained"
             color="primary"
             onClick={handleSubmitClick}
-            disabled={partnerState.loading}
+            disabled={reduxLoading}
+            startIcon={reduxLoading && <CircularProgress size={20} sx={{ color: "white" }}/>}
           >
-            {isLoading ? <CircularProgress size={24} /> : "Save"}
+            Submit
           </Button>
         </Box>
       )}
-
     </Paper>
   );
 };

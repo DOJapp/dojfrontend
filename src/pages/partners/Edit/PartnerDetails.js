@@ -12,10 +12,14 @@ import {
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import FileUpload from '../../../Components/FileUpload';
+import { useDispatch, useSelector } from 'react-redux';
+import Swal from 'sweetalert2';
+import * as PartnerActions from "../../../redux/Actions/partnerActions.js";
+import AddIcon from "@mui/icons-material/Add";
 
-function PartnerDetails({ partner, isLoading }) {
+
+function PartnerDetails({ partner }) {
     const [isEditing, setIsEditing] = useState(false);
-    const [loading, setLoading] = useState(false);
     const [companyDetails, setCompanyDetails] = useState([]);
     const [formErrors, setFormErrors] = useState({
         panNumber: '',
@@ -31,7 +35,6 @@ function PartnerDetails({ partner, isLoading }) {
 
     useEffect(() => {
         if (partner?.partners && Array.isArray(partner.partners)) {
-            // Initialize or update state for all partners
             const updatedCompanyDetails = partner.partners.map((partnerDetails) => ({
                 panNumber: partnerDetails.panNumber || '',
                 aadharNumber: partnerDetails.aadharNumber || '',
@@ -47,6 +50,23 @@ function PartnerDetails({ partner, isLoading }) {
         }
     }, [partner]);
 
+    const handleAddPartner = () => {
+        setCompanyDetails([
+            ...companyDetails,
+            {
+                panNumber: '',
+                aadharNumber: '',
+                panImage: null,
+                aadharFrontImage: null,
+                aadharBackImage: null,
+                bankName: '',
+                accountNumber: '',
+                ifscCode: '',
+                accountHolderName: '',
+            }
+        ]);
+    };
+
     const handleKeyDown = (e, fieldName) => {
         const allowedKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"];
 
@@ -60,6 +80,18 @@ function PartnerDetails({ partner, isLoading }) {
             }
         }
     };
+
+    const dispatch = useDispatch();
+    const { success, error, loading: reduxLoading } = useSelector((state) => state.partner);
+    useEffect(() => {
+        if (success) {
+            Swal.fire('Success', 'Partner Details updated successfully', 'success');
+            setIsEditing(false);
+        }
+        if (error) {
+            Swal.fire('Error', error, 'error');
+        }
+    }, [success, error]);
 
     useEffect(() => {
         if (!isEditing) {
@@ -175,6 +207,9 @@ function PartnerDetails({ partner, isLoading }) {
         }
     };
 
+
+
+
     const handleFileChange = (fieldName, index) => (e) => {
         const file = e.target.files[0];
         const updatedCompanyDetails = [...companyDetails];
@@ -191,31 +226,43 @@ function PartnerDetails({ partner, isLoading }) {
         }
     };
 
-    const handleSubmitClick = () => {
-        setLoading(true);
-        const errors = {};
+    const prepareFormData = () => {
+        const formData = new FormData();
         companyDetails.forEach((partnerDetail, index) => {
             Object.keys(partnerDetail).forEach((field) => {
-                const errorMessage = validate(field, partnerDetail[field]);
-                if (errorMessage) errors[`${field}-${index}`] = errorMessage;
+                if (field !== 'panImage' && field !== 'aadharFrontImage' && field !== 'aadharBackImage') {
+                    formData.append(`partners[${index}][${field}]`, partnerDetail[field] || ''); // Send empty string for empty text fields
+                }
             });
+
+            if (partnerDetail.panImage) {
+                formData.append(`partners[${index}][panImage]`, partnerDetail.panImage);
+            }
+            if (partnerDetail.aadharFrontImage) {
+                formData.append(`partners[${index}][aadharFrontImage]`, partnerDetail.aadharFrontImage);
+            }
+            if (partnerDetail.aadharBackImage) {
+                formData.append(`partners[${index}][aadharBackImage]`, partnerDetail.aadharBackImage);
+            }
         });
 
-        setFormErrors(errors);
-        const hasErrors = Object.values(errors).some((msg) => msg !== '');
+        return formData;
+    };
 
-        if (!hasErrors) {
-            setTimeout(() => {
-                setLoading(false);
-                setIsEditing(false);
-            }, 2000);
-        } else {
-            setLoading(false);
-        }
+
+    const handleSubmitClick = () => {
+        const formData = prepareFormData();
+        dispatch(PartnerActions.updatePartnerDetails(partner._id, formData))
     };
 
     const handleEditClick = () => {
         setIsEditing(true);
+    };
+
+    const handleRemovePartner = (index) => {
+        const updatedCompanyDetails = [...companyDetails];
+        updatedCompanyDetails.splice(index, 1);
+        setCompanyDetails(updatedCompanyDetails);
     };
 
     return (
@@ -237,9 +284,29 @@ function PartnerDetails({ partner, isLoading }) {
             {companyDetails.map((partnerDetail, index) => (
                 <Grid container spacing={2} key={index} style={{ marginBottom: '20px' }}>
                     <Grid item xs={12} md={12}>
-                        <Typography variant="h6" gutterBottom>
-                            Partner {index + 1}
-                        </Typography>
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                            }}
+                        >
+                            <Typography variant="h6" gutterBottom>
+                                Partner {index + 1}
+                            </Typography>
+
+                            {index >= 0 && (
+                                <Button
+                                    variant="contained"
+                                    color="secondary"
+                                    size="small"
+                                    disabled={!isEditing}
+                                    onClick={() => handleRemovePartner(index)}
+                                >
+                                    Remove
+                                </Button>
+                            )}
+                        </div>
                         <Divider style={{ marginBottom: "10px" }} />
                     </Grid>
                     <Grid item xs={12} md={6}>
@@ -360,23 +427,34 @@ function PartnerDetails({ partner, isLoading }) {
                         />
                     </Grid>
                 </Grid >
-            ))
-            }
+            ))}
+            {isEditing && (
+                <>
+                    <Grid item xs={12} container>
+                        <Grid item xs={12} container justifyContent="flex-end">
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                startIcon={<AddIcon />}
+                                onClick={handleAddPartner}
+                            >
+                                Add More Partner
+                            </Button>
+                        </Grid>
+                    </Grid>
 
-            {
-                isEditing && (
                     <Box display="flex" justifyContent="flex-end" marginTop="20px">
                         <Button
                             variant="contained"
                             color="primary"
                             onClick={handleSubmitClick}
-                            disabled={loading || Object.values(formErrors).some((err) => err !== "")}
+                            disabled={reduxLoading || Object.values(formErrors).some((err) => err !== "")}
                         >
-                            {isLoading ? <CircularProgress size={24} sx={{ color: 'white' }} /> : "Submit"}
+                            {reduxLoading ? <CircularProgress size={24} sx={{ color: 'white' }} /> : "Submit"}
                         </Button>
                     </Box>
-                )
-            }
+                </>
+            )}
         </Paper >
     );
 }

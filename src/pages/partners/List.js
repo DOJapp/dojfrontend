@@ -8,7 +8,7 @@ import {
   getPartners,
   deletePartner,
 } from "../../redux/Actions/partnerActions.js";
-import { AddCircleRounded, Edit, Delete } from "@mui/icons-material";
+import { AddCircleRounded, Edit, Delete, Visibility } from "@mui/icons-material";
 
 const PartnerList = () => {
   const classes = useStyles();
@@ -20,16 +20,18 @@ const PartnerList = () => {
   const error = useSelector((state) => state.partner.error);
 
   useEffect(() => {
-    // Dispatch action to fetch partners
     dispatch(getPartners());
   }, [dispatch]);
 
   const handleEdit = (rowData) => {
-    // Redirect to the edit page with the partner ID
     navigate(`/partners/edit/${rowData._id}`);
   };
+
+  const handleView = (rowData) => {
+    navigate(`/partners/views/${rowData._id}`);
+  };
+
   const handleStore = (rowData) => {
-    // Redirect to the edit page with the partner ID
     navigate(`/partners/edit/${rowData._id}`);
   };
 
@@ -55,11 +57,11 @@ const PartnerList = () => {
               },
               {
                 title: "Pan Number",
-                field: "panNumber", 
+                field: "panNumber",
               },
               {
                 title: "Firm Name",
-                field: "firmName", 
+                field: "firmName",
               },
               {
                 title: "Status",
@@ -85,9 +87,18 @@ const PartnerList = () => {
                 render: (rowData) => (
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <IconButton
+                      onClick={() => handleView(rowData)}
+                      color="primary"
+                      aria-label="edit"
+                      style={{ border: "1px solid gray", margin: "0 2px" }}
+                    >
+                      <Visibility />
+                    </IconButton>
+                    <IconButton
                       onClick={() => handleEdit(rowData)}
                       color="primary"
                       aria-label="edit"
+                      style={{ border: "1px solid gray", margin: "0 4px" }}
                     >
                       <Edit />
                     </IconButton>
@@ -95,6 +106,7 @@ const PartnerList = () => {
                       onClick={() => handleDelete(rowData)}
                       color="secondary"
                       aria-label="delete"
+                      style={{ border: "1px solid gray", margin: "0 4px" }}
                     >
                       <Delete />
                     </IconButton>

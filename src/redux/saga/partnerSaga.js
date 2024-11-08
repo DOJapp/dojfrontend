@@ -2,7 +2,7 @@ import * as actionTypes from "../actionTypes";
 import { call, put, takeLeading } from "redux-saga/effects";
 import Swal from "sweetalert2";
 import { ApiRequest } from "../../utils/apiRequest";
-import { api_url, partners, partner_bank_details, partner_basic_details, partner_gst_details } from "../../utils/Constants";
+import { api_url, partners, partner_bank_details, partner_basic_details, partner_gst_details, partner_firm_details, partner_details } from "../../utils/Constants";
 import { Colors } from "../../assets/styles";
 import {
   setPartners,
@@ -23,6 +23,14 @@ import {
   updatePartnerGstDetails,
   updatePartnerGstDetailsFailure,
   updatePartnerGstDetailsSuccess,
+  updatePartnerFirmDetails,
+  updatePartnerFirmDetailsFailure,
+  updatePartnerFirmDetailsSuccess,
+  updatePartnerDetails,
+  updatePartnerDetailsFailure,
+  updatePartnerDetailsSuccess,
+
+
 } from "../Actions/partnerActions";
 
 // Helper function for displaying alerts
@@ -244,6 +252,61 @@ function* updatePartnerGstDetailsSaga(action) {
   }
 }
 
+function* updatePartnerFirmDetailsSaga(action) {
+
+  try {
+    yield put({ type: actionTypes.SET_IS_LOADING, payload: true });
+    const { id, data } = action.payload;
+
+    const response = yield call(ApiRequest.putRequest, {
+      url: `${api_url}${partner_firm_details}/${id}`,
+      data,
+      header: 'json'
+    });
+
+    if (response?.success) {
+      yield put(updatePartnerFirmDetailsSuccess(response.data));
+      showAlert("success", "Partner Updated", "The Partner Firm Details has been successfully updated.");
+    } else {
+      yield put(updatePartnerFirmDetailsFailure(response.message));
+      showAlert("error", "Error", response.message || "Failed to update Firm Details");
+    }
+  } catch (error) {
+    yield put(updatePartnerFirmDetailsFailure(error.message));
+    showAlert("error", "Error", error.message);
+  } finally {
+    yield put({ type: actionTypes.SET_IS_LOADING, payload: false });
+  }
+}
+
+function* updatePartnerDetailsSaga(action) {
+
+  try {
+
+    yield put({ type: actionTypes.SET_IS_LOADING, payload: true });
+    const { id, data } = action.payload;
+
+    const response = yield call(ApiRequest.putRequest, {
+      url: `${api_url}${partner_details}/${id}`,
+      data,
+      header: 'json'
+    });
+
+    if (response?.success) {
+      yield put(updatePartnerDetailsSuccess(response.data));
+      showAlert("success", "Partner Updated", "The Partner Details has been successfully updated.");
+    } else {
+      yield put(updatePartnerDetailsFailure(response.message));
+      showAlert("error", "Error", response.message || "Failed to update Firm Details");
+    }
+  } catch (error) {
+    yield put(updatePartnerDetailsFailure(error.message));
+    showAlert("error", "Error", error.message);
+  } finally {
+    yield put({ type: actionTypes.SET_IS_LOADING, payload: false });
+  }
+}
+
 // Root saga to watch for Partner-related actions
 export default function* partnerSaga() {
   yield takeLeading(actionTypes.GET_PARTNERS, getPartnersSaga);
@@ -254,4 +317,6 @@ export default function* partnerSaga() {
   yield takeLeading(actionTypes.UPDATE_PARTNER_BANK_DETAILS, updatePartnerBankDetailsSaga);
   yield takeLeading(actionTypes.UPDATE_PARTNER_BASIC_DETAILS, updatePartnerBasicDetailsSaga);
   yield takeLeading(actionTypes.UPDATE_PARTNER_GST_DETAILS, updatePartnerGstDetailsSaga);
+  yield takeLeading(actionTypes.UPDATE_PARTNER_FIRM_DETAILS, updatePartnerFirmDetailsSaga);
+  yield takeLeading(actionTypes.UPDATE_PARTNER_DETAILS, updatePartnerDetailsSaga);
 }

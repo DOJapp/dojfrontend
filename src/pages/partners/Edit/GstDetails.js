@@ -11,6 +11,7 @@ import {
   Avatar,
   Paper,
   Box,
+  CircularProgress,
   IconButton,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
@@ -18,7 +19,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Swal from 'sweetalert2';
 import * as PartnerActions from "../../../redux/Actions/partnerActions.js";
 
-function GstDetails({ partner, isLoading }) {
+function GstDetails({ partner }) {
   const [isEditing, setIsEditing] = useState(false);
   const [gstSelected, setGstSelected] = useState('No');
   const [gstDetails, setGstDetails] = useState({
@@ -48,12 +49,12 @@ function GstDetails({ partner, isLoading }) {
         cessType: partner.cessType || '',
         percentage: partner.percentage || '',
         goodsServiceType: partner.goodsServiceType || '',
-        documentImages: partner.documentImages || [],
+        documentImages: partner?.documents || [],
       });
       setGstSelected(partner.gstNumber ? 'Yes' : 'No');
     }
   }, [partner]);
-
+  
   useEffect(() => {
     if (success) {
       Swal.fire('Success', 'GST Details updated successfully', 'success');
@@ -77,8 +78,19 @@ function GstDetails({ partner, isLoading }) {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    if (name === "percentage") {
+      let numericValue = value.replace(/[^0-9.]/g, '');
+      if (numericValue !== '') {
+        numericValue = parseFloat(numericValue);
+        if (numericValue > 100) numericValue = 100;
+        else if (numericValue < 0) numericValue = 0;
+      }
 
-    if (name === 'gstNumber') {
+      setGstDetails((prevDetails) => ({
+        ...prevDetails,
+        percentage: numericValue.toString(),
+      }));
+    } else if (name === 'gstNumber') {
       const formattedValue = formatGstNumber(value);
       setGstDetails((prevDetails) => ({
         ...prevDetails,
@@ -86,7 +98,7 @@ function GstDetails({ partner, isLoading }) {
       }));
 
       if (!gstRegex.test(formattedValue)) {
-        setGstError('Invalid GST Number format');
+        setGstError('Invalid GST Number format 22AAAAA0000A1Z5');
       } else {
         setGstError('');
       }
@@ -114,10 +126,17 @@ function GstDetails({ partner, isLoading }) {
     }
     const formData = new FormData();
 
+    formData.append('gstNumber', gstDetails.gstNumber || '');
+    formData.append('gstType', gstDetails.gstType || '');
+    formData.append('compositionType', gstDetails.compositionType || '');
+    formData.append('cessType', gstDetails.cessType || '');
+    formData.append('percentage', gstDetails.percentage || '');
+    formData.append('goodsServiceType', gstDetails.goodsServiceType || '');
+
     gstDetails.documentImages.forEach((file, index) => {
-      formData.append('documents', file); 
+      formData.append('documents', file);
     });
-    
+
     dispatch(PartnerActions.updatePartnerGstDetails(partner._id, formData));
   };
 
@@ -292,17 +311,21 @@ function GstDetails({ partner, isLoading }) {
                   />
                 </Button>
               </Grid>
-              <Grid item xs={4}>
-                <Avatar
-                  alt="Upload Document Preview"
-                  src={previewImage}
-                  sx={{
-                    width: 50,
-                    height: 50,
-                    ml: 1,
-                    mt: 1,
-                  }}
-                />
+              <Grid item xs={12} container spacing={1}>
+                {gstDetails.documentImages.map((file, index) => (
+                  <Grid item key={index}>
+                    <Avatar
+                      alt={`Document Preview ${index + 1}`}
+                      src={file || URL.createObjectURL(file)}
+                      sx={{
+                        width: 50,
+                        height: 50,
+                        ml: 1,
+                        mt: 1,
+                      }}
+                    />
+                  </Grid>
+                ))}
               </Grid>
             </Grid>
           </>
@@ -317,7 +340,8 @@ function GstDetails({ partner, isLoading }) {
             onClick={handleSubmitClick}
             disabled={!!gstError || reduxLoading}
           >
-            Submit
+            {reduxLoading ? <CircularProgress size={24} sx={{ color: 'white' }} /> : "Submit"}
+
           </Button>
         </Box>
       )}

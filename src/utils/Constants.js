@@ -23,6 +23,8 @@ export const partners="admin/partners";
 export const partner_bank_details="admin/partners/bank_details";
 export const partner_basic_details="admin/partners/basic_details";
 export const partner_gst_details="admin/partners/gst_details";
+export const partner_firm_details="admin/partners/firm_details";
+export const partner_details="admin/partners/partner_details";
 
 // tags 
 export const tags="admin/tags";

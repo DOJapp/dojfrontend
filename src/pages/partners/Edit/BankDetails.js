@@ -36,7 +36,7 @@ const BankDetails = ({ partner }) => {
     if (partner) {
       setFormData({
         bankName: partner.bankName || "",
-        accountNumber: partner.accountNumber || "",
+        accountNumber: partner.accountNumber ? partner.accountNumber.toString() : "",
         ifscCode: partner.ifscCode || "",
         accountHolderName: partner.accountHolderName || "",
       });

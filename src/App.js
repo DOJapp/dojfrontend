@@ -28,6 +28,7 @@ import EditProduct from "./pages/products/EditProduct.js";
 import PartnersList from "./pages/partners/List.js";
 import PartnersAdd from "./pages/partners/Add.js";
 import EditPartners from "./pages/partners/Edit.js";
+import ViewPartners from "./pages/partners/View.js";
 
 // tags
 import TagList from "./pages/tags/List.js";
@@ -69,6 +70,7 @@ function App() {
           <Route path="/partners" element={<PartnersList />} />
           <Route path="/partners/add" element={<PartnersAdd />} />
           <Route path="/partners/edit/:id" element={<EditPartners />} />
+          <Route path="/partners/views/:id" element={<ViewPartners />} />
 
           {/* Banner Routes */}
           <Route path="/banner" element={<BannerList />} />
