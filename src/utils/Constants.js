@@ -17,6 +17,7 @@ export const banner="admin/banner";
 
 // products 
 export const products="admin/products";
+export const active_products="admin/active_products";
 
 // partners 
 export const partners="admin/partners";

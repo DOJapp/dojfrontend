@@ -2,12 +2,14 @@ import * as actionTypes from "../actionTypes";
 import { call, put, takeLeading } from "redux-saga/effects";
 import Swal from "sweetalert2";
 import { ApiRequest } from "../../utils/apiRequest"; // Ensure ApiRequest is imported
-import { api_url, products } from "../../utils/Constants"; // Adjust these imports based on your API structure
+import { api_url, products,active_products } from "../../utils/Constants"; // Adjust these imports based on your API structure
 import { Colors } from "../../assets/styles";
 import {
-  setProducts,
-  setProduct,
   getProducts,
+  setProducts,
+  getActiveProducts,
+  setActiveProducts,
+  setProduct,
   createProductSuccess,
   createProductFailure,
   updateProductSuccess,
@@ -26,9 +28,8 @@ function* getProductsSaga() {
 
     if (response?.success) {
       console.log("response", response.data);
-      yield put(setProducts(response.data)); // Dispatch the setProducts action
+      yield put(setProducts(response.data));
     } else {
-      yield put(createProductFailure(response.message)); // Handle failure
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -36,7 +37,6 @@ function* getProductsSaga() {
       });
     }
   } catch (error) {
-    yield put(createProductFailure(error.message)); // Handle failure
     Swal.fire({
       icon: "error",
       title: "Error",
@@ -44,6 +44,35 @@ function* getProductsSaga() {
     });
   } finally {
     yield put({ type: actionTypes.SET_IS_LOADING, payload: false }); // Set loading state to false
+  }
+}
+
+// Saga to get all products
+function* getActiveProductsSaga() {
+  try {
+    yield put({ type: actionTypes.SET_IS_LOADING, payload: true }); 
+    const response = yield call(ApiRequest.getRequest, {
+      url: api_url + active_products,
+    });
+
+    if (response?.success) {
+      console.log("response", response.data);
+      yield put(setActiveProducts(response.data)); 
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: response.message || "Failed to fetch products",
+      });
+    }
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: error.message,
+    });
+  } finally {
+    yield put({ type: actionTypes.SET_IS_LOADING, payload: false }); 
   }
 }
 
@@ -224,9 +253,10 @@ function* updateProductSaga(action) {
 
 // Root saga to watch for product-related actions
 export default function* productSaga() {
-  yield takeLeading(actionTypes.GET_PRODUCTS, getProductsSaga); // Watch for product fetching
-  yield takeLeading(actionTypes.GET_PRODUCT_BY_ID, getProductByIdSaga); // Watch for single product fetch
-  yield takeLeading(actionTypes.DELETE_PRODUCT, deleteProductSaga); // Watch for product deletion
-  yield takeLeading(actionTypes.CREATE_PRODUCT, createProductSaga); // Watch for product creation
-  yield takeLeading(actionTypes.UPDATE_PRODUCT, updateProductSaga); // Watch for product update
+  yield takeLeading(actionTypes.GET_PRODUCTS, getProductsSaga);
+  yield takeLeading(actionTypes.GET_ACTIVE_PRODUCTS, getActiveProductsSaga);
+  yield takeLeading(actionTypes.GET_PRODUCT_BY_ID, getProductByIdSaga);
+  yield takeLeading(actionTypes.DELETE_PRODUCT, deleteProductSaga);
+  yield takeLeading(actionTypes.CREATE_PRODUCT, createProductSaga);
+  yield takeLeading(actionTypes.UPDATE_PRODUCT, updateProductSaga);
 }

@@ -4,6 +4,8 @@ import * as actionTypes from "../actionTypes";
 export const getProducts = () => ({
   type: actionTypes.GET_PRODUCTS,
 });
+// Action to get all products
+
 
 // Action to set products in the state
 export const setProducts = (payload) => ({
@@ -11,6 +13,14 @@ export const setProducts = (payload) => ({
   payload,
 });
 
+export const getActiveProducts = () => ({
+  type: actionTypes.GET_ACTIVE_PRODUCTS,
+});
+
+export const setActiveProducts = (payload) => ({
+  type: actionTypes.SET_ACTIVE_PRODUCTS,
+  payload,
+});
 // Action to get a specific product by its ID
 export const getProductById = (payload) => ({
   type: actionTypes.GET_PRODUCT_BY_ID,

@@ -10,12 +10,19 @@ import {
   FormControl,
   InputLabel,
   Snackbar,
+  CircularProgress,
+  Avatar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { createCategory } from "../../../redux/Actions/categoryActions"; // Adjust the import path
+import { createCategory } from "../../../redux/Actions/categoryActions";
 import MuiAlert from "@mui/material/Alert";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
-import Swal from "sweetalert2"; // Ensure this is imported if you're using it
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import List from "@mui/icons-material/List";
 
 const Alert = React.forwardRef((props, ref) => (
   <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />
@@ -24,6 +31,7 @@ const Alert = React.forwardRef((props, ref) => (
 const AddCategory = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const [category, setCategory] = useState({
     title: "",
     status: "",
@@ -36,13 +44,29 @@ const AddCategory = () => {
   const [titleError, setTitleError] = useState("");
   const [statusError, setStatusError] = useState("");
   const [imageError, setImageError] = useState("");
+  const [openImagePreview, setOpenImagePreview] = useState(false);
 
-  const categoryState = useSelector((state) => state.category); // Get category state from Redux
+  const { success, error, loading } = useSelector((state) => state.category);
+
+  useEffect(() => {
+    if (loading) return;
+
+    if (error) {
+      Swal.fire("Error!", error, "error");
+    } else if (success) {
+      setSnackbarMessage("Category added successfully!");
+      setIsError(false);
+      setOpenSnackbar(true);
+      setCategory({ title: "", status: "", image: null });
+      setImagePreview(null);
+      navigate("/category");
+    }
+  }, [success, error, loading, navigate]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
-    // Reset error messages when user interacts
+    // Reset error messages on change
     if (name === "title") setTitleError("");
     else if (name === "status") setStatusError("");
     else if (name === "image") setImageError("");
@@ -62,37 +86,33 @@ const AddCategory = () => {
     }
   };
 
-  const handleSubmit = async () => {
+  const validateForm = () => {
     let hasError = false;
-
-    // Validate Title
     if (!category.title) {
       setTitleError("Title is required.");
       hasError = true;
     }
-
-    // Validate Status
     if (!category.status) {
       setStatusError("Status is required.");
       hasError = true;
     }
-
-    // Validate Image
     if (!category.image) {
       setImageError("Image is required.");
       hasError = true;
     }
+    return hasError;
+  };
 
-    if (hasError) return; // Stop submission if there are errors
+  const handleSubmit = async () => {
+    if (validateForm()) return;
 
-    // Prepare form data for submission
     const formData = new FormData();
     formData.append("title", category.title);
     formData.append("status", category.status);
     formData.append("image", category.image);
 
     try {
-      await dispatch(createCategory(formData));
+      await dispatch(createCategory(formData)); // Dispatch action to create category
     } catch (error) {
       setSnackbarMessage("Failed to add category.");
       setIsError(true);
@@ -100,35 +120,38 @@ const AddCategory = () => {
     }
   };
 
-  useEffect(() => {
-    if (categoryState.loading) return;
-
-    if (categoryState.error) {
-      Swal.fire("Error!", categoryState.error, "error");
-    } else if (categoryState.success) {
-      setSnackbarMessage("Category added successfully!");
-      setIsError(false);
-      setOpenSnackbar(true);
-      // Reset form after successful submission
-      setCategory({ title: "", status: "", image: null });
-      setImagePreview(null);
-      navigate("/category"); // Navigate after success
-    }
-  }, [categoryState, navigate]);
-
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
   };
 
-  const isFormValid = () => {
-    return category.title && category.status && category.image;
-  };
-
   return (
-    <Paper elevation={3} style={{ padding: "20px" }}>
-      <Typography variant="h5" gutterBottom align="left">
-        Add Category
-      </Typography>
+    <Paper sx={{ padding: 3 }}>
+      <Grid item xs={12}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: 20,
+          }}
+        >
+          <Typography variant="h6">Add Category</Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate("/category")}
+            startIcon={<List />}
+            style={{
+              textTransform: "none",
+              fontWeight: "bold",
+              borderRadius: 8,
+              padding: "8px 16px",
+            }}
+          >
+            Display Category
+          </Button>
+        </div>
+      </Grid>
+
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6}>
           <TextField
@@ -141,11 +164,12 @@ const AddCategory = () => {
             required
             error={!!titleError}
             helperText={titleError}
+            sx={{ mb: 2 }}
           />
         </Grid>
 
         <Grid item xs={12} sm={6}>
-          <FormControl fullWidth required variant="outlined" error={!!statusError}>
+          <FormControl fullWidth required variant="outlined" error={!!statusError} sx={{ mb: 2 }}>
             <InputLabel>Status</InputLabel>
             <Select
               label="Status"
@@ -157,13 +181,13 @@ const AddCategory = () => {
               <MenuItem value="Active">Active</MenuItem>
               <MenuItem value="Blocked">Blocked</MenuItem>
             </Select>
-            {statusError && <p style={{ color: 'red', margin: '4px 0 0 0' }}>{statusError}</p>}
+            {statusError && <Typography variant="body2" color="error">{statusError}</Typography>}
           </FormControl>
         </Grid>
 
         <Grid item xs={12} sm={6} container spacing={2} alignItems="center">
           <Grid item xs={8}>
-            <Button variant="outlined" component="label" fullWidth required>
+            <Button variant="outlined" component="label" fullWidth required sx={{ mb: 2 }}>
               Upload Image
               <input
                 type="file"
@@ -173,30 +197,48 @@ const AddCategory = () => {
                 onChange={handleChange}
               />
             </Button>
+            {imageError && <Typography variant="body2" color="error">{imageError}</Typography>}
           </Grid>
           {imagePreview && (
             <Grid item xs={4}>
-              <div className="image-preview" style={{ textAlign: "center" }}>
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  style={{ width: "100%", height: "auto" }}
-                />
-              </div>
+              <Avatar
+                src={imagePreview}
+                sx={{
+                  width: 120,
+                  height: 120,
+                  mt: 2,
+                  cursor: "pointer",
+                  border: "2px solid #ccc",
+                  objectFit: "cover",
+                }}
+                onClick={() => setOpenImagePreview(true)}
+              />
             </Grid>
           )}
         </Grid>
-        {imageError && <p style={{ color: 'red', margin: '4px 0 0 0' }}>{imageError}</p>}
 
-        <Grid item xs={12} container justifyContent="center">
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSubmit}
-            disabled={!isFormValid()} // Disable button if form is invalid
-          >
-            Add Category
-          </Button>
+        <Grid item xs={12} container justifyContent="center" spacing={2}>
+          <Grid item>
+            <Button
+              onClick={handleSubmit}
+              disabled={loading}
+              variant="contained"
+              color="primary"
+              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+            >
+              {loading ? "Loading..." : "Submit"}
+            </Button>
+          </Grid>
+
+          <Grid item>
+            <Button
+              onClick={() => setCategory({ title: "", status: "", image: null })}
+              variant="contained"
+              color="secondary"
+            >
+              Reset
+            </Button>
+          </Grid>
         </Grid>
       </Grid>
 
@@ -204,15 +246,24 @@ const AddCategory = () => {
         open={openSnackbar}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }} // Positioning the Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={isError ? "error" : "success"}
-        >
+        <Alert onClose={handleCloseSnackbar} severity={isError ? "error" : "success"}>
           {snackbarMessage}
         </Alert>
       </Snackbar>
+
+      <Dialog open={openImagePreview} onClose={() => setOpenImagePreview(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Image Preview</DialogTitle>
+        <DialogContent>
+          <img src={imagePreview} alt="Preview" style={{ width: "100%", borderRadius: "8px" }} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenImagePreview(false)} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 };

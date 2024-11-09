@@ -1,12 +1,12 @@
 import * as actionTypes from "../actionTypes";
-import _ from "lodash"; // Import lodash for deep cloning
+import _ from "lodash";
 
 const initialState = {
-  tags: [], // Array of tags
-  selectedTag: null, // The currently selected tag
-  loading: false, // Loading state indicator
+  tags: [],
+  selectedTag: null,
+  loading: false,
   error: null,
-  success: false, // Success state
+  success: false,
 };
 
 const tagReducer = (state = initialState, action) => {
@@ -16,89 +16,90 @@ const tagReducer = (state = initialState, action) => {
     case actionTypes.SET_TAGS:
       return {
         ...state,
-        tags: _.cloneDeep(payload), 
+        tags: _.cloneDeep(payload),
         loading: false,
-        success: false,
         error: null,
+        success: false,
       };
     case actionTypes.SET_TAG:
       return {
         ...state,
         selectedTag: _.cloneDeep(payload),
         loading: false,
-        success: false, 
+        error: null,
+        success: false,
+      };
+    case actionTypes.CREATE_TAG:
+      return {
+        ...state,
+        loading: true,
+        success: false,
         error: null,
       };
-    case actionTypes.CREATE_TAG: 
+    case actionTypes.CREATE_TAG_SUCCESS:
       return {
         ...state,
-        loading: true, 
-        success: false, 
-      };
-    case actionTypes.CREATE_TAG_SUCCESS: // Action for successful tag creation
-      return {
-        ...state,
-        tags: [..._.cloneDeep(state.tags), payload], // Deep clone and add new tag
+        tags: [...state.tags, _.cloneDeep(payload)],
         loading: false,
         error: null,
-        success: true, // Indicate success
+        success: true,
       };
-    case actionTypes.CREATE_TAG_FAILURE: // Action for failed tag creation
+    case actionTypes.CREATE_TAG_FAILURE:
       return {
         ...state,
         loading: false,
         error: payload,
-        success: false, // Reset success on failure
+        success: false,
       };
-    case actionTypes.UPDATE_TAG: // Action to initiate tag update
+    case actionTypes.UPDATE_TAG:
       return {
         ...state,
-        loading: true, // Set loading true for update
-        success: false, // Reset success
+        loading: true,
+        success: false,
+        error: null,
       };
-    case actionTypes.UPDATE_TAG_SUCCESS: // Action for successful tag update
+    case actionTypes.UPDATE_TAG_SUCCESS:
       return {
         ...state,
         tags: state.tags.map(
-          (tag) => (tag._id === payload._id ? _.cloneDeep(payload) : tag) // Deep clone updated tag
+          (tag) => (tag._id === payload._id ? _.cloneDeep(payload) : tag)
         ),
-        selectedTag: _.cloneDeep(payload), // Update selected tag
+        selectedTag: _.cloneDeep(payload),
         loading: false,
         error: null,
-        success: true, // Indicate success
+        success: true,
       };
-    case actionTypes.UPDATE_TAG_FAILURE: // Action for failed tag update
+    case actionTypes.UPDATE_TAG_FAILURE:
       return {
         ...state,
         loading: false,
         error: payload,
-        success: false, // Reset success on failure
+        success: false,
       };
-    case actionTypes.DELETE_TAG: // Action to initiate tag deletion
+    case actionTypes.DELETE_TAG:
       return {
         ...state,
-        loading: true, // Set loading true for deletion
-        success: false, // Reset success
+        loading: true,
+        success: false,
+        error: null,
       };
-    case actionTypes.DELETE_TAG_SUCCESS: // Action for successful tag deletion
+    case actionTypes.DELETE_TAG_SUCCESS:
       return {
         ...state,
-        tags: state.tags.filter(
-          (tag) => tag._id !== payload // Remove the deleted tag
-        ),
+        tags: state.tags.filter((tag) => tag._id !== payload),
         loading: false,
         error: null,
-        success: true, // Indicate success
+        success: true,
       };
-    case actionTypes.DELETE_TAG_FAILURE: // Action for failed tag deletion
+    case actionTypes.DELETE_TAG_FAILURE:
       return {
         ...state,
         loading: false,
         error: payload,
-        success: false, // Reset success on failure
+        success: false,
       };
     default:
-      return state; // Return the state unchanged by default
+      return state;
   }
 };
 

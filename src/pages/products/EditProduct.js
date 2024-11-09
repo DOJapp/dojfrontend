@@ -9,24 +9,21 @@ import {
   Select,
   FormControl,
   InputLabel,
+  CircularProgress,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { getCategories } from "../../redux/Actions/categoryActions";
-import { useStyles } from "../../assets/styles.js";
-import {
-  getProductById,
-  updateProduct,
-} from "../../redux/Actions/productActions";
-import { useParams } from "react-router-dom";
+import { getProductById, updateProduct } from "../../redux/Actions/productActions";
+import { useParams, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
 const EditProduct = () => {
-  const classes = useStyles();
   const dispatch = useDispatch();
   const categories = useSelector((state) => state.category.categories);
-  const productState = useSelector((state) => state.product);
+  const { success, error, loading } = useSelector((state) => state.product);
 
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [product, setProduct] = useState({
     name: "",
@@ -41,7 +38,6 @@ const EditProduct = () => {
 
   const [status, setStatus] = useState("Active");
   const [imagePreview, setImagePreview] = useState(null);
-
   const [errors, setErrors] = useState({
     name: "",
     categoryId: "",
@@ -59,21 +55,38 @@ const EditProduct = () => {
   }, [dispatch, id]);
 
   useEffect(() => {
-    if (productState.product) {
-      setProduct({
-        name: productState.product.name,
-        description: productState.product.description,
-        categoryId: productState.product.categoryId,
-        price: productState.product.price,
-        discount: productState.product.discount,
-        quantity: productState.product.quantity,
-        image: null,
-        deliveryMode: productState.product.deliveryMode,
-      });
-      setImagePreview(productState.product.image); // Assuming the product has an imageUrl field
-      setStatus(productState.product.status);
+    if (id && categories.length > 0) {
+      const productData = categories.find((category) => category._id === id);
+      if (productData) {
+        setProduct({
+          name: productData.name,
+          description: productData.description,
+          categoryId: productData.categoryId,
+          price: productData.price,
+          discount: productData.discount,
+          quantity: productData.quantity,
+          image: null,
+          deliveryMode: productData.deliveryMode,
+        });
+        setImagePreview(productData.image);
+        setStatus(productData.status);
+      }
     }
-  }, [productState.product]);
+  }, [id, categories]);
+
+  const handleUpdateResult = () => {
+    if (success) {
+      Swal.fire("Success!", "Product updated successfully!", "success");
+      navigate("/products");
+      handleReset();
+    } else if (error) {
+      Swal.fire("Error!", error, "error");
+    }
+  };
+
+  useEffect(() => {
+    handleUpdateResult();
+  }, [success, error]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -91,6 +104,29 @@ const EditProduct = () => {
         [name]: value,
       }));
     }
+  };
+
+  const handleReset = () => {
+    setProduct({
+      name: "",
+      description: "",
+      categoryId: "",
+      price: "",
+      discount: "",
+      quantity: "",
+      image: null,
+      deliveryMode: "",
+    });
+    setStatus("Active");
+    setImagePreview(null);
+    setErrors({
+      name: "",
+      categoryId: "",
+      price: "",
+      quantity: "",
+      deliveryMode: "",
+      image: "",
+    });
   };
 
   const validate = () => {
@@ -161,29 +197,6 @@ const EditProduct = () => {
     dispatch(updateProduct(id, formData));
   };
 
-  useEffect(() => {
-    if (productState.loading) return;
-
-    if (productState.error) {
-      Swal.fire("Error!", productState.error, "error");
-    } else if (productState.success) {
-      Swal.fire("Success!", "Product updated successfully!", "success");
-      // Reset form after submission
-      setProduct({
-        name: "",
-        description: "",
-        categoryId: "",
-        price: "",
-        discount: "",
-        quantity: "",
-        image: null,
-        deliveryMode: "",
-      });
-      setStatus("Active");
-      setImagePreview(null);
-    }
-  }, [productState]);
-
   return (
     <Paper elevation={3} style={{ padding: "20px" }}>
       <Typography variant="h5" gutterBottom align="left">
@@ -205,12 +218,7 @@ const EditProduct = () => {
         </Grid>
 
         <Grid item xs={12} sm={6}>
-          <FormControl
-            fullWidth
-            required
-            variant="outlined"
-            error={!!errors.categoryId}
-          >
+          <FormControl fullWidth required variant="outlined" error={!!errors.categoryId}>
             <InputLabel>Category</InputLabel>
             <Select
               label="Category"
@@ -224,9 +232,7 @@ const EditProduct = () => {
                 </MenuItem>
               ))}
             </Select>
-            {errors.categoryId && (
-              <p style={{ color: "red" }}>{errors.categoryId}</p>
-            )}
+            {errors.categoryId && <p style={{ color: "red" }}>{errors.categoryId}</p>}
           </FormControl>
         </Grid>
 
@@ -234,7 +240,7 @@ const EditProduct = () => {
           <TextField
             label="Price"
             name="price"
-            type="text"
+            type="number"
             value={product.price}
             onChange={handleChange}
             variant="outlined"
@@ -249,7 +255,7 @@ const EditProduct = () => {
           <TextField
             label="Discount"
             name="discount"
-            type="text"
+            type="number"
             value={product.discount}
             onChange={handleChange}
             variant="outlined"
@@ -261,7 +267,7 @@ const EditProduct = () => {
           <TextField
             label="Quantity"
             name="quantity"
-            type="text"
+            type="number"
             value={product.quantity}
             onChange={handleChange}
             variant="outlined"
@@ -313,9 +319,8 @@ const EditProduct = () => {
               value={product.deliveryMode}
               onChange={handleChange}
             >
-              <MenuItem value="">Select Delivery Mode</MenuItem>
-              <MenuItem value="instant">Instant</MenuItem>
-              <MenuItem value="scheduled">Scheduled</MenuItem>
+              <MenuItem value="PickUp">PickUp</MenuItem>
+              <MenuItem value="Delivery">Delivery</MenuItem>
             </Select>
             {errors.deliveryMode && (
               <p style={{ color: "red" }}>{errors.deliveryMode}</p>
@@ -323,7 +328,7 @@ const EditProduct = () => {
           </FormControl>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} sm={6}>
           <FormControl fullWidth variant="outlined" required>
             <InputLabel>Status</InputLabel>
             <Select
@@ -349,10 +354,40 @@ const EditProduct = () => {
           />
         </Grid>
 
-        <Grid item xs={12} container justifyContent="center">
-          <Button variant="contained" color="primary" onClick={handleSubmit}>
-            Update Product
-          </Button>
+        <Grid item xs={12} container justifyContent="center" spacing={2}>
+          <Grid item>
+            <Button
+              onClick={handleSubmit}
+              disabled={loading}
+              variant="contained"
+              sx={{
+                color: "white",
+                backgroundColor: "primary.main",
+                textTransform: "none",
+                px: 3,
+              }}
+            >
+              {loading ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                "Update"
+              )}
+            </Button>
+          </Grid>
+          <Grid item>
+            <Button
+              onClick={handleReset}
+              variant="outlined"
+              sx={{
+                textTransform: "none",
+                color: "secondary.main",
+                borderColor: "secondary.main",
+                px: 3,
+              }}
+            >
+              Reset
+            </Button>
+          </Grid>
         </Grid>
       </Grid>
     </Paper>

@@ -12,6 +12,7 @@ import AddUser from "./pages/user/AddUser";
 
 import BannerList from "./pages/banner/List.js";
 import BannerAdd from "./pages/banner/Add.js";
+import BannerEdit from "./pages/banner/Edit.js";
 
 import TermsAndConditions from "./pages/pages/TermsAndConditions";
 import PrivacyPolicy from "./pages/pages/PrivacyPolicy";
@@ -75,7 +76,7 @@ function App() {
           {/* Banner Routes */}
           <Route path="/banner" element={<BannerList />} />
           <Route path="/banner/add" element={<BannerAdd />} />
-          <Route path="/banner/edit/:id" element={<BannerAdd />} />
+          <Route path="/banner/edit/:id" element={<BannerEdit />} />
 
           {/* Pages Routes */}
           <Route path="/displayTermsAndConditions" element={<TermsAndConditions />} />

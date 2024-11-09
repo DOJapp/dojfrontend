@@ -1,6 +1,5 @@
-import React, { useEffect } from "react";
-import { useStyles } from "../../../assets/styles.js";
-import { Grid, IconButton } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Grid, IconButton, Typography, Paper, Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
 import MaterialTable from "material-table";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,13 +7,15 @@ import { getCategories, deleteCategory } from "../../../redux/Actions/categoryAc
 import { AddCircleRounded, Edit, Delete } from "@mui/icons-material";
 
 const CategoryList = () => {
-  const classes = useStyles();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   // Access categories from Redux store
   const categoriesData = useSelector((state) => state.category.categories);
   console.log("categoriesData", categoriesData);
+
+  const [openPreview, setOpenPreview] = useState(false);
+  const [imagePreview, setImagePreview] = useState("");
 
   useEffect(() => {
     // Dispatch action to fetch categories
@@ -28,12 +29,36 @@ const CategoryList = () => {
 
   const handleDelete = (rowData) => {
     // Dispatch delete action
-    dispatch(deleteCategory({ _id: rowData._id })); 
+    dispatch(deleteCategory({ _id: rowData._id }));
   };
 
+  const handleImageClick = (imageUrl) => {
+    setImagePreview(imageUrl);
+    setOpenPreview(true);
+  };
+
+  const handleClosePreview = () => {
+    setOpenPreview(false);
+  };
+
+  // Format the date to IST (Indian Standard Time)
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  // Create a deep copy of the categoriesData and format the createdAt field
   const displayTable = () => {
     const deepCopyCategoriesData = categoriesData.map((category) => ({
       ...category,
+      formattedDate: formatDate(category.createdAt), // Format the createdAt date to IST
     }));
 
     return (
@@ -41,11 +66,11 @@ const CategoryList = () => {
         <Grid item lg={12}>
           <MaterialTable
             title="Categories"
-            data={deepCopyCategoriesData} // Use the deep-copied data
+            data={deepCopyCategoriesData} // Use the formatted data
             columns={[
               {
                 title: "S.No",
-                render: (rowData) => rowData.tableData.id + 1, // Serial number
+                render: (rowData) => rowData.tableData.id + 1,
               },
               {
                 title: "Image",
@@ -53,12 +78,14 @@ const CategoryList = () => {
                   <img
                     src={rowData.image}
                     alt={rowData.title}
-                    style={{ width: 50, height: 50 }}
+                    style={{ width: 50, height: 50, cursor: "pointer" }}
+                    onClick={() => handleImageClick(rowData.image)}
                   />
                 ),
               },
               { title: "Title", field: "title" },
               { title: "Status", field: "status" },
+              { title: "Created At", field: "formattedDate" }, // Show the formatted date
               {
                 title: "Action",
                 render: (rowData) => (
@@ -91,10 +118,20 @@ const CategoryList = () => {
             actions={[
               {
                 icon: () => (
-                  <div className={classes.addButton}>
-                    <AddCircleRounded />
-                    <div className={classes.addButtontext}>Add New</div>
-                  </div>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    style={{
+                      textTransform: "none",
+                      fontWeight: "bold",
+                      borderRadius: 8,
+                      padding: "8px 16px",
+                    }}
+                    startIcon={<AddCircleRounded />}
+                    onClick={() => navigate("/category/add")}
+                  >
+                    Add New
+                  </Button>
                 ),
                 tooltip: "Add Category",
                 isFreeAction: true,
@@ -108,9 +145,26 @@ const CategoryList = () => {
   };
 
   return (
-    <div className={classes.container}>
-      <div className={classes.box}>{displayTable()}</div>
-    </div>
+    <Paper sx={{ padding: 3, marginTop: 4, marginX: "auto" }}>
+      {displayTable()}
+
+      {/* Dialog for image preview */}
+      <Dialog open={openPreview} onClose={handleClosePreview}>
+        <DialogTitle>Image Preview</DialogTitle>
+        <DialogContent>
+          <img
+            src={imagePreview}
+            alt="Preview"
+            style={{ width: "100%", height: "auto" }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClosePreview} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Paper>
   );
 };
 

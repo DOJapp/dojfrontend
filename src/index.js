@@ -11,14 +11,13 @@ import "./index.css";
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1976d2', // Primary color
+      main: '#1976d2', 
     },
     secondary: {
       main: '#dc004e', // Secondary color
     },
     success: {
-      main: '#4caf50', // Success color (standard naming for green)
-      contrastText: '#fff', // Text color for success
+      main: '#4caf50', 
     },
   },
 });

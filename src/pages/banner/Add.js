@@ -1,31 +1,31 @@
-import React, { useState } from "react";
-import { useStyles } from "../../assets/styles.js";
-import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Grid,
-  Avatar,
-  Button,
-} from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { FormControl, InputLabel, Select, MenuItem, Grid, Avatar, Button, Paper, Typography, Dialog, DialogActions, DialogContent, DialogTitle, CircularProgress } from "@mui/material";
 import List from "@mui/icons-material/List";
 import { useNavigate } from "react-router-dom";
-import Loader from "../../Components/loading/Loader.js";
 import logo_icon from "../../assets/images/logo_icon.png";
 import Swal from "sweetalert2";
-import { connect } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { createBanner } from "../../redux/Actions/bannerActions.js";
+import { getActiveProducts } from "../../redux/Actions/productActions.js";
 
-const Add = ({ dispatch }) => {
+const Add = () => {
   const navigate = useNavigate();
-  const classes = useStyles();
-  const [redirectTo, setRedirectTo] = useState("");  // Determines if redirect is to product or restaurant
+  const dispatch = useDispatch();
+  const { success, error: bannerError, loading } = useSelector((state) => state.banner);
+
+  const activeProducts = useSelector((state) => state.product.products || []);
+
+
+  const [redirectTo, setRedirectTo] = useState("");
   const [status, setStatus] = useState("Active");
   const [icon, setIcon] = useState({ file: logo_icon, bytes: "" });
   const [error, setError] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [url, setUrl] = useState("");  // Holds productId or restaurantId depending on selection
+  const [url, setUrl] = useState("");
+  const [openImagePreview, setOpenImagePreview] = useState(false);
+
+  useEffect(() => {
+    dispatch(getActiveProducts());
+  }, [dispatch]);
 
   const handleError = (input, value) => {
     setError((prev) => ({ ...prev, [input]: value }));
@@ -35,7 +35,7 @@ const Add = ({ dispatch }) => {
     if (e.target.files && e.target.files.length > 0) {
       setIcon({
         file: URL.createObjectURL(e.target.files[0]),
-        bytes: e.target.files[0],  // Stores the file itself for submission
+        bytes: e.target.files[0],
       });
       handleError("icon", null);
     }
@@ -62,194 +62,218 @@ const Add = ({ dispatch }) => {
     return isValid;
   };
 
+  const handleUpdateResult = () => {
+    if (success) {
+      Swal.fire("Success!", "Banner added successfully.", "success");
+      navigate("/banner");
+    } else if (bannerError) {
+      Swal.fire("Error!", "Failed to add banner.", "error");
+    }
+  };
+
+  useEffect(() => {
+    if (success || bannerError) handleUpdateResult();
+  }, [success, bannerError]);
+
+  // Handle form submission
   const handleSubmit = async () => {
     if (validation()) {
-      setIsLoading(true);
-
-      // Use FormData to handle file uploads
       const formData = new FormData();
-      formData.append("image", icon.bytes);  // Append the image file
+      formData.append("image", icon.bytes);
+      formData.append("redirectTo", redirectTo);
       formData.append("status", status);
 
-      // Conditionally add either productId or restaurantId to the form data
       if (redirectTo === "product") {
         formData.append("productId", url);
       } else if (redirectTo === "restaurant") {
         formData.append("restaurantId", url);
       }
 
-      // Dispatch the action to create the banner
       dispatch(createBanner(formData));
-
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulating a delay
-
-        navigate("/banner");
-      } catch (error) {
-        console.error("Error adding banner:", error);
-        Swal.fire("Error!", "Failed to add banner.", "error");
-      } finally {
-        setIsLoading(false);
-      }
     }
   };
 
   const handleReset = () => {
     setIcon({ file: logo_icon, bytes: "" });
     setRedirectTo("");
-    setUrl("");  // Reset product or restaurant selection
+    setUrl("");
     setStatus("Active");
     setError({});
   };
 
   return (
-    <div className={classes.container}>
-      <div className={classes.box}>
-        {isLoading && <Loader />}
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <div className={classes.headingContainer}>
-              <div className={classes.heading}>Add Banner</div>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={() => navigate("/banner")}
-                className={classes.addButtontext}
-              >
-                <List /> Display Banner
-              </Button>
-            </div>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <FormControl
-              fullWidth
-              variant="outlined"
-              error={!!error.redirectTo}
+    <Paper sx={{ padding: 3, margin: "auto", mt: 4 }}>
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+            <Typography variant="h6">Add Banner</Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => navigate("/banner")}
+              startIcon={<List />}
+              style={{
+                textTransform: "none",
+                fontWeight: "bold",
+                borderRadius: 8,
+                padding: "8px 16px",
+              }}
             >
-              <InputLabel id="select-label">Select Redirect Page</InputLabel>
-              <Select
-                label="Select Page"
-                labelId="select-label"
-                value={redirectTo}
-                onChange={(e) => {
-                  setRedirectTo(e.target.value);
-                  setUrl("");  // Reset the product/restaurant selection when changing redirect
-                  handleError("redirectTo", null); // Clear error on change
-                }}
-              >
-                <MenuItem value="">Select Options</MenuItem>
-                <MenuItem value="product">Product</MenuItem>
-                <MenuItem value="restaurant">Restaurant</MenuItem>
-              </Select>
-              <div className={classes.errorstyles}>{error.redirectTo}</div>
-            </FormControl>
-          </Grid>
+              Display Banner
+            </Button>
+          </div>
+        </Grid>
 
+        <Grid item xs={12} md={6}>
+          <FormControl fullWidth variant="outlined" error={!!error.redirectTo} sx={{ minWidth: 120 }}>
+            <InputLabel id="select-label">Select Redirect Page</InputLabel>
+            <Select
+              label="Select Page"
+              labelId="select-label"
+              value={redirectTo}
+              onChange={(e) => {
+                setRedirectTo(e.target.value);
+                setUrl("");  // Reset URL when page type changes
+                handleError("redirectTo", null);
+              }}
+            >
+              <MenuItem value="product">Product</MenuItem>
+              <MenuItem value="restaurant">Restaurant</MenuItem>
+            </Select>
+            {error.redirectTo && <Typography variant="caption" color="error">{error.redirectTo}</Typography>}
+          </FormControl>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <FormControl fullWidth variant="outlined" required sx={{ minWidth: 120 }}>
+            <InputLabel>Status</InputLabel>
+            <Select
+              label="Status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              <MenuItem value="Active">Active</MenuItem>
+              <MenuItem value="Blocked">Blocked</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+
+        {redirectTo === "product" && (
           <Grid item xs={12} md={6}>
-            <FormControl fullWidth variant="outlined" required>
-              <InputLabel>Status</InputLabel>
+            <FormControl fullWidth variant="outlined" error={!!error.url} sx={{ minWidth: 120 }}>
+              <InputLabel id="product-select-label">Select Product</InputLabel>
               <Select
-                label="Status"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
+                label="Select Product"
+                labelId="product-select-label"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
               >
-                <MenuItem value="Active">Active</MenuItem>
-                <MenuItem value="Block">Blocked</MenuItem>
+                {activeProducts.map((product) => (
+                  <MenuItem key={product._id} value={product._id}>
+                    {product.name}
+                  </MenuItem>
+                ))}
               </Select>
+              {error.url && <Typography variant="caption" color="error">{error.url}</Typography>}
             </FormControl>
           </Grid>
+        )}
 
-          {/* Conditional rendering for Product Dropdown */}
-          {redirectTo === "product" && (
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth variant="outlined" error={!!error.url}>
-                <InputLabel id="product-select-label">
-                  Select Product
-                </InputLabel>
-                <Select
-                  label="Select Product"
-                  labelId="product-select-label"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                >
-                  <MenuItem value="product1">Product 1</MenuItem>
-                  <MenuItem value="product2">Product 2</MenuItem>
-                  <MenuItem value="product3">Product 3</MenuItem>
-                </Select>
-                <div className={classes.errorstyles}>{error.url}</div>
-              </FormControl>
-            </Grid>
-          )}
-
-          {/* Conditional rendering for Restaurant Dropdown */}
-          {redirectTo === "restaurant" && (
-            <Grid item xs={12} md={6}>
-              <FormControl
-                fullWidth
-                variant="outlined"
-                error={!!error.url}
+        {redirectTo === "restaurant" && (
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth variant="outlined" error={!!error.url} sx={{ minWidth: 120 }}>
+              <InputLabel id="restaurant-select-label">Select Restaurant</InputLabel>
+              <Select
+                label="Select Restaurant"
+                labelId="restaurant-select-label"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
               >
-                <InputLabel id="restaurant-select-label">
-                  Select Restaurant
-                </InputLabel>
-                <Select
-                  label="Select Restaurant"
-                  labelId="restaurant-select-label"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                >
-                  <MenuItem value="restaurant1">Restaurant 1</MenuItem>
-                  <MenuItem value="restaurant2">Restaurant 2</MenuItem>
-                  <MenuItem value="restaurant3">Restaurant 3</MenuItem>
-                </Select>
-                <div className={classes.errorstyles}>{error.url}</div>
-              </FormControl>
-            </Grid>
-          )}
+                <MenuItem value="restaurant1">Restaurant 1</MenuItem>
+                <MenuItem value="restaurant2">Restaurant 2</MenuItem>
+                <MenuItem value="restaurant3">Restaurant 3</MenuItem>
+              </Select>
+              {error.url && <Typography variant="caption" color="error">{error.url}</Typography>}
+            </FormControl>
+          </Grid>
+        )}
 
-          <Grid item xs={12} md={6} className={classes.uploadContainer}>
-            <label className={classes.uploadImageButton}>
-              Upload Picture
-              <input
-                onChange={handleIcon}
-                hidden
-                accept="image/*"
-                type="file"
-              />
-            </label>
-            <div className={classes.errorstyles}>{error.icon}</div>
-            <Avatar src={icon.file} style={{ width: 56, height: 56 }} />
+        <Grid item xs={12} md={6}>
+          <Button
+            variant="outlined"
+            component="label"
+            sx={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: "10px 16px",
+              textTransform: "none",
+              fontWeight: "bold",
+              borderRadius: 8,
+            }}
+          >
+            Upload Picture
+            <input
+              type="file"
+              hidden
+              accept="image/*"
+              onChange={handleIcon}
+            />
+          </Button>
+          {error.icon && <Typography variant="caption" color="error" sx={{ display: "block", mt: 1 }}>{error.icon}</Typography>}
+          <Avatar
+            src={icon.file}
+            sx={{
+              width: 120,
+              height: 120,
+              mt: 2,
+              cursor: "pointer",
+              border: "2px solid #ccc",
+              objectFit: "cover",
+            }}
+            onClick={() => setOpenImagePreview(true)}
+          />
+        </Grid>
+
+        <Grid item xs={12} container justifyContent="center" spacing={2}>
+          <Grid item>
+            <Button
+              onClick={handleSubmit}
+              disabled={loading}
+              variant="contained"
+              color="primary"
+              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+            >
+              {loading ? "Loading..." : "Submit"}
+            </Button>
           </Grid>
 
-          <Grid item xs={12} container justifyContent="center" spacing={2}>
-            <Grid item>
-              <Button
-                onClick={handleSubmit}
-                disabled={isLoading}
-                variant="contained"
-                color="primary"
-              >
-                Submit
-              </Button>
-            </Grid>
-
-            <Grid item>
-              <Button
-                onClick={handleReset}
-                variant="outlined"
-                color="secondary"
-              >
-                Reset
-              </Button>
-            </Grid>
+          <Grid item>
+            <Button
+              onClick={handleReset}
+              variant="contained"
+              color="secondary"
+            >
+              Reset
+            </Button>
           </Grid>
         </Grid>
-      </div>
-    </div>
+      </Grid>
+
+      <Dialog open={openImagePreview} onClose={() => setOpenImagePreview(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Image Preview</DialogTitle>
+        <DialogContent>
+          <img src={icon.file} alt="Preview" style={{ width: "100%", borderRadius: "8px" }} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenImagePreview(false)} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Paper>
   );
 };
 
-const mapDispatchToProps = (dispatch) => ({ dispatch });
-
-export default connect(null, mapDispatchToProps)(Add);
+export default Add;

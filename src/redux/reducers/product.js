@@ -5,6 +5,7 @@ const initialState = {
   product: null,
   loading: false,
   error: null,
+  success: false,
 };
 
 const product = (state = initialState, action) => {
@@ -17,6 +18,16 @@ const product = (state = initialState, action) => {
         products: payload,
         loading: false,
         error: null,
+        success: false,
+      };
+
+    case actionTypes.SET_ACTIVE_PRODUCTS:
+      return {
+        ...state,
+        products: payload,
+        loading: false,
+        error: null,
+        success: false,
       };
 
     case actionTypes.SET_PRODUCT:
@@ -25,6 +36,7 @@ const product = (state = initialState, action) => {
         product: payload,
         loading: false,
         error: null,
+        success: false,
       };
 
     case actionTypes.CREATE_PRODUCT:
@@ -33,14 +45,37 @@ const product = (state = initialState, action) => {
       return {
         ...state,
         loading: true,
-        error: null, // Clear error on new request
+        success: false,
+        error: null,
       };
 
     case actionTypes.CREATE_PRODUCT_SUCCESS:
       return {
         ...state,
-        products: [...state.products, payload], // Add new product to the list
+        products: [...state.products, payload],
         loading: false,
+        success: true,
+        error: null,
+      };
+
+    case actionTypes.UPDATE_PRODUCT_SUCCESS:
+      return {
+        ...state,
+        products: state.products.map(
+          (product) => (product._id === payload._id ? payload : product)
+        ),
+        product: payload,
+        loading: false,
+        success: true,
+        error: null,
+      };
+
+    case actionTypes.DELETE_PRODUCT_SUCCESS:
+      return {
+        ...state,
+        products: state.products.filter((product) => product._id !== payload),
+        loading: false,
+        success: true,
         error: null,
       };
 
@@ -50,28 +85,8 @@ const product = (state = initialState, action) => {
       return {
         ...state,
         loading: false,
+        success: false,
         error: payload,
-      };
-
-    case actionTypes.UPDATE_PRODUCT_SUCCESS:
-      return {
-        ...state,
-        products: state.products.map(
-          (product) => (product._id === payload.id ? payload : product) // Update the product in the list
-        ),
-        product: payload, // Update the selected product as well
-        loading: false,
-        error: null,
-      };
-
-    case actionTypes.DELETE_PRODUCT_SUCCESS:
-      return {
-        ...state,
-        products: state.products.filter(
-          (product) => product._id !== payload // Remove the product from the list
-        ),
-        loading: false,
-        error: null,
       };
 
     default:

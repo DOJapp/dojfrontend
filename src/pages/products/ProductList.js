@@ -1,23 +1,22 @@
-import React, { useEffect } from "react";
-import { useStyles } from "../../assets/styles.js";
-import { Grid, IconButton } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Grid, Chip, IconButton, Paper, Button, Typography, Dialog, DialogTitle, DialogContent } from "@mui/material";
 import MaterialTable from "material-table";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  getProducts,
-  deleteProduct,
-} from "../../redux/Actions/productActions.js";
+import { getProducts, deleteProduct } from "../../redux/Actions/productActions";
 import { AddCircleRounded, Edit, Delete } from "@mui/icons-material";
 
 const ProductList = () => {
-  const classes = useStyles();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   // Access products from Redux store
   const productsData = useSelector((state) => state.product.products);
   const error = useSelector((state) => state.product.error);
+
+  // State for the image preview dialog
+  const [open, setOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     // Dispatch action to fetch products
@@ -34,105 +33,131 @@ const ProductList = () => {
     dispatch(deleteProduct(rowData._id));
   };
 
-  const displayTable = () => {
-    return (
-      <Grid container spacing={1}>
-        <Grid item lg={12}>
-          <MaterialTable
-            title="Products"
-            data={productsData.map((product, index) => ({
-              ...product,
-              serial: index + 1,
-            }))} // Map data to add a serial number
-            columns={[
-              {
-                title: "S.No",
-                field: "serial",
-              },
-              {
-                title: "Name",
-                field: "name",
-              },
-              {
-                title: "Image",
-                field: "image",
-                render: (rowData) => (
-                  <img
-                    src={rowData.image || "fallback_image_url"}
-                    alt={rowData.name}
-                    style={{ width: 50, height: 50 }}
-                  />
-                ),
-              },
-              { title: "Status", field: "status" },
-              { title: "Price", field: "price" },
-              { title: "Quantity", field: "quantity" },
-              {
-                title: "Category",
-                render: (rowData) => rowData.categoryId?.title || "N/A", // Safely access category title
-              },
-              {
-                title: "Admin",
-                render: (rowData) => rowData.adminId?.name || "N/A", // Safely access category title
-              },
-              {
-                title: "Action",
-                render: (rowData) => (
-                  <div>
-                    <IconButton
-                      onClick={() => handleEdit(rowData)}
-                      color="primary"
-                      aria-label="edit"
-                    >
-                      <Edit />
-                    </IconButton>
-                    <IconButton
-                      onClick={() => handleDelete(rowData)}
-                      color="secondary"
-                      aria-label="delete"
-                    >
-                      <Delete />
-                    </IconButton>
-                  </div>
-                ),
-              },
-            ]}
-            options={{
-              sorting: true,
-              search: true,
-              paging: true,
-              pageSize: 5,
-              actionsColumnIndex: -1, // Place action buttons at the end
-              emptyRowsWhenPaging: false, // Avoid extra empty rows
-              debounceInterval: 500, // Debounce search input for better performance
-            }}
-            actions={[
-              {
-                icon: () => (
-                  <div className={classes.addButton}>
-                    <AddCircleRounded />
-                    <div className={classes.addButtontext}>Add New</div>
-                  </div>
-                ),
-                tooltip: "Add Product",
-                isFreeAction: true,
-                onClick: () => navigate("/products/add"),
-              },
-            ]}
-          />
-        </Grid>
-      </Grid>
-    );
+  const handleImageClick = (image) => {
+    // Open the dialog and set the selected image
+    setSelectedImage(image);
+    setOpen(true);
   };
 
+  const handleClose = () => {
+    // Close the dialog and reset selected image
+    setOpen(false);
+    setSelectedImage(null);
+  };
+
+  const displayTable = () => (
+    <Paper elevation={3} style={{ padding: "10px", borderRadius: "8px" }}>
+      <MaterialTable
+        title="Products"
+        data={productsData.map((product, index) => ({
+          ...product,
+          serial: index + 1,
+        }))}
+        columns={[
+          { title: "S.No", field: "serial" },
+          { title: "Name", field: "name" },
+          {
+            title: "Image",
+            field: "image",
+            render: (rowData) => (
+              <img
+                src={rowData.image || "fallback_image_url"}
+                alt={rowData.name}
+                style={{ width: 50, height: 50, cursor: "pointer" }}
+                onClick={() => handleImageClick(rowData.image)}
+              />
+            ),
+          },
+          {
+            title: "Status",
+            render: (rowData) =>
+              rowData.status === "Active" ? (
+                <Chip label="Active" size="small" variant="outlined" color="success" />
+              ) : (
+                <Chip label="Blocked" size="small" variant="outlined" color="error" />
+              ),
+          },
+          { title: "Price", field: "price" },
+          { title: "Quantity", field: "quantity" },
+          {
+            title: "Category",
+            render: (rowData) => rowData.categoryId?.title || "N/A",
+          },
+          {
+            title: "Admin",
+            render: (rowData) => rowData.adminId?.name || "N/A",
+          },
+          {
+            title: "Action",
+            render: (rowData) => (
+              <div>
+                <IconButton onClick={() => handleEdit(rowData)} color="primary" aria-label="edit">
+                  <Edit />
+                </IconButton>
+                <IconButton onClick={() => handleDelete(rowData)} color="secondary" aria-label="delete">
+                  <Delete />
+                </IconButton>
+              </div>
+            ),
+          },
+        ]}
+        options={{
+          sorting: true,
+          search: true,
+          paging: true,
+          pageSize: 5,
+          actionsColumnIndex: -1,
+          emptyRowsWhenPaging: false,
+          debounceInterval: 500,
+        }}
+        actions={[
+          {
+            icon: () => (
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<AddCircleRounded />}
+                onClick={() => navigate("/products/add")}
+                style={{
+                  textTransform: "none",
+                  fontWeight: "bold",
+                  borderRadius: 8,
+                  padding: "8px 16px",
+                }}
+              >
+                Add New
+              </Button>
+            ),
+            tooltip: "Add Product",
+            isFreeAction: true,
+          },
+        ]}
+      />
+    </Paper>
+  );
+
   if (error) {
-    return <div style={{ color: "red" }}>{error}</div>; // Error message
+    return (
+      <Typography color="error" align="center" variant="h6" >
+        {error}
+      </Typography>
+    );
   }
 
   return (
-    <div className={classes.container}>
-      <div className={classes.box}>{displayTable()}</div>
-    </div>
+    <>
+      {displayTable()}
+      <Dialog open={open} onClose={handleClose} maxWidth="sm">
+        <DialogTitle>Image Preview</DialogTitle>
+        <DialogContent>
+          <img
+            src={selectedImage || "fallback_image_url"}
+            alt="Selected banner"
+            style={{ width: "100%", height: "auto" }}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

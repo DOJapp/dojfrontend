@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useStyles } from "../../assets/styles.js";
 import {
   FormControl,
   InputLabel,
@@ -7,54 +6,60 @@ import {
   MenuItem,
   Grid,
   Avatar,
-  TextField,
   Button,
+  Paper,
+  Typography,
+  CircularProgress,
 } from "@mui/material";
-import DvrIcon from "@mui/icons-material/Dvr";
 import { useNavigate, useParams } from "react-router-dom";
-import Loader from "../../Components/loading/Loader.js";
-import logo_icon from "../../assets/images/logo_icon.png";
-import { Colors } from "../../assets/styles.js";
-import Swal from "sweetalert2";
-import { connect } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import * as BannerActions from "../../redux/Actions/bannerActions.js";
+import Swal from "sweetalert2";
+import logo_icon from "../../assets/images/logo_icon.png";
+import DvrIcon from "@mui/icons-material/Dvr";
 
-const Edit = ({ dispatch }) => {
+const Edit = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // Get the banner ID from the URL
-  const classes = useStyles();
-  const [title, setTitle] = useState("");
+  const { id } = useParams();
+  const dispatch = useDispatch();
+
   const [redirectTo, setRedirectTo] = useState("");
   const [url, setUrl] = useState("");
   const [status, setStatus] = useState("Active");
   const [icon, setIcon] = useState({ file: logo_icon, bytes: "" });
-  const [error, setError] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
+
+  const { success, error: bannerError, loading } = useSelector(
+    (state) => state.banner
+  );
 
   useEffect(() => {
-    // Fetch the existing banner details using the ID
     const fetchBannerDetails = async () => {
-      setIsLoading(true);
       try {
-        const banner = await dispatch(BannerActions.getBannerById(id)); // Make sure this action exists
-        setTitle(banner.title);
+        const banner = await dispatch(BannerActions.getBannerById(id));
         setRedirectTo(banner.redirectTo);
         setUrl(banner.redirectionUrl);
         setStatus(banner.status);
-        setIcon({ file: banner.bannerImage, bytes: "" }); // Assuming bannerImage is a URL
+        setIcon({ file: banner.bannerImage, bytes: "" });
       } catch (error) {
         Swal.fire("Error!", "Failed to fetch banner details.", "error");
-      } finally {
-        setIsLoading(false);
       }
     };
 
     fetchBannerDetails();
   }, [id, dispatch]);
 
-  const handleError = (input, value) => {
-    setError((prev) => ({ ...prev, [input]: value }));
+  const handleUpdateResult = () => {
+    if (success) {
+      Swal.fire("Success!", "Banner updated successfully.", "success");
+      navigate("/banner");
+    } else if (bannerError) {
+      Swal.fire("Error!", "Failed to update banner.", "error");
+    }
   };
+
+  useEffect(() => {
+    if (success || bannerError) handleUpdateResult();
+  }, [success, bannerError]);
 
   const handleIcon = (e) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -62,176 +67,184 @@ const Edit = ({ dispatch }) => {
         file: URL.createObjectURL(e.target.files[0]),
         bytes: e.target.files[0],
       });
-      handleError("icon", null);
     }
   };
 
   const validation = () => {
     let isValid = true;
-
-    if (!title) {
-      handleError("title", "Please input title");
-      isValid = false;
-    }
-
     if (!icon.bytes) {
-      handleError("icon", "Please select a banner image");
+      Swal.fire("Validation Error", "Please select a banner image", "error");
       isValid = false;
     }
-
     if (!redirectTo) {
-      handleError("redirectTo", "Please select a redirect page");
+      Swal.fire("Validation Error", "Please select a redirect page", "error");
       isValid = false;
     }
-
     return isValid;
   };
 
   const handleSubmit = async () => {
     if (validation()) {
-      setIsLoading(true);
       const data = {
-        title,
-        bannerImage: icon.bytes || icon.file, // Use the new image or the existing one
+        bannerImage: icon.bytes || icon.file,
         redirectTo,
         redirectionUrl: url,
         bannerFor: "app",
         status,
       };
 
-      dispatch(BannerActions.updateAppBanner(id, data)) // Make sure this action exists
-        .then(() => {
-          setIsLoading(false);
-          Swal.fire("Success!", "Banner updated successfully.", "success");
-          navigate("/banner");
-        })
-        .catch((err) => {
-          setIsLoading(false);
-          Swal.fire("Error!", "Failed to update banner.", "error");
-        });
+      try {
+        await dispatch(BannerActions.updateBanner(id, data));
+      } catch {
+        Swal.fire("Error!", "Failed to update banner.", "error");
+      }
     }
   };
 
   const handleReset = () => {
-    setTitle("");
-    setIcon({ file: logo_icon, bytes: "" });
     setRedirectTo("");
     setUrl("");
     setStatus("Active");
-    setError({});
+    setIcon({ file: logo_icon, bytes: "" });
   };
 
   return (
-    <div className={classes.container}>
-      <div className={classes.box}>
-        {isLoading && <Loader />}
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <div className={classes.headingContainer}>
-              <div className={classes.heading}>Edit Banner</div>
-              <div
-                onClick={() => navigate("/banner")}
-                className={classes.addButton}
-              >
-                <DvrIcon />
-                <div className={classes.addButtontext}>Display Banner</div>
-              </div>
-            </div>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <TextField
-              label="Enter Title"
-              error={!!error.title}
-              helperText={error.title}
-              value={title}
-              onFocus={() => handleError("title", null)}
-              onChange={(event) => setTitle(event.target.value)}
-              variant="outlined"
-              fullWidth
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <FormControl
-              fullWidth
-              variant="outlined"
-              error={!!error.redirectTo}
-            >
-              <InputLabel id="select-label">Select Redirect Page</InputLabel>
-              <Select
-                label="Select Page"
-                labelId="select-label"
-                value={redirectTo}
-                onChange={(e) => setRedirectTo(e.target.value)}
-              >
-                <MenuItem value="1">Read Page</MenuItem>
-                <MenuItem value="customer_home">Customer Home</MenuItem>
-                <MenuItem value="astrologer_profile">
-                  Astrologers Profile
-                </MenuItem>
-                <MenuItem value="astrologer_home">Astrologers Home</MenuItem>
-                <MenuItem value="4">Recharge Page</MenuItem>
-              </Select>
-              <div className={classes.errorstyles}>{error.redirectTo}</div>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <FormControl fullWidth variant="outlined" required>
-              <InputLabel>Status</InputLabel>
-              <Select
-                label="Status"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-              >
-                <MenuItem value="Active">Active</MenuItem>
-                <MenuItem value="Blocked">Blocked</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={6} className={classes.uploadContainer}>
-            <label className={classes.uploadImageButton}>
-              Upload Picture
-              <input
-                onChange={handleIcon}
-                hidden
-                accept="image/*"
-                type="file"
-              />
-            </label>
-            <div className={classes.errorstyles}>{error.icon}</div>
-            <Avatar
-              color={Colors.primaryDark}
-              src={icon.file}
-              style={{ width: 56, height: 56 }}
-            />
-          </Grid>
+    <Paper elevation={3} sx={{ p: 3, mx: "auto", mt: 4 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 20,
+        }}
+      >
+        <Typography variant="h5" gutterBottom>
+          Edit Banner
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => navigate("/banner")}
+          startIcon={<DvrIcon />}
+          style={{
+            textTransform: "none",
+            fontWeight: "bold",
+            borderRadius: 8,
+            padding: "8px 16px",
+          }}
+        >
+          Display Banner
+        </Button>
+      </div>
 
-          <Grid item xs={12} container justifyContent="center" spacing={2}>
-            <Grid item>
-              <Button
-                onClick={handleSubmit}
-                disabled={isLoading}
-                variant="contained"
-                color="primary"
-              >
-                Update
-              </Button>
-            </Grid>
-            <Grid item>
-              <Button
-                onClick={handleReset}
-                variant="outlined"
-                color="secondary"
-              >
-                Reset
-              </Button>
-            </Grid>
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={6}>
+          <FormControl fullWidth>
+            <InputLabel>Select Redirect Page</InputLabel>
+            <Select
+              label="Select Redirect Page"
+              value={redirectTo}
+              onChange={(e) => setRedirectTo(e.target.value)}
+            >
+              <MenuItem value="product">Product</MenuItem>
+              <MenuItem value="restaurant">Restaurant</MenuItem>
+            </Select>
+            {bannerError?.redirectTo && (
+              <Typography variant="caption" color="error">
+                {bannerError.redirectTo}
+              </Typography>
+            )}
+          </FormControl>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <FormControl fullWidth>
+            <InputLabel>Status</InputLabel>
+            <Select
+              label="Status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              <MenuItem value="Active">Active</MenuItem>
+              <MenuItem value="Blocked">Blocked</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Typography variant="body2" sx={{ mb: 1 }}>
+            Upload Picture
+          </Typography>
+          <input
+            onChange={handleIcon}
+            hidden
+            accept="image/*"
+            type="file"
+            id="icon-upload"
+          />
+          <label htmlFor="icon-upload">
+            <Button
+              variant="outlined"
+              component="label"
+              sx={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                padding: "10px 16px",
+                textTransform: "none",
+                fontWeight: "bold",
+                borderRadius: 8,
+              }}
+            >
+              Choose File
+            </Button>
+          </label>
+          {bannerError?.icon && (
+            <Typography variant="caption" color="error" sx={{ mt: 1 }}>
+              {bannerError.icon}
+            </Typography>
+          )}
+          <Avatar src={icon.file} sx={{ width: 56, height: 56, mt: 1 }} />
+        </Grid>
+
+        <Grid item xs={12} container justifyContent="center" spacing={2}>
+          <Grid item>
+            <Button
+              onClick={handleSubmit}
+              disabled={loading}
+              variant="contained"
+              sx={{
+                color: "white",
+                backgroundColor: "primary.main",
+                textTransform: "none",
+                px: 3,
+              }}
+            >
+              {loading ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                "Update"
+              )}
+            </Button>
+          </Grid>
+          <Grid item>
+            <Button
+              onClick={handleReset}
+              variant="outlined"
+              sx={{
+                textTransform: "none",
+                color: "secondary.main",
+                borderColor: "secondary.main",
+                px: 3,
+              }}
+            >
+              Reset
+            </Button>
           </Grid>
         </Grid>
-      </div>
-    </div>
+      </Grid>
+    </Paper>
   );
 };
 
-const mapDispatchToProps = (dispatch) => ({ dispatch });
-
-export default connect(null, mapDispatchToProps)(Edit);
+export default Edit;

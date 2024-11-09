@@ -9,38 +9,49 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  CircularProgress
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { getTagById, updateTag } from "../../redux/Actions/tagsActions"; // Assume you have these actions
+import { getTagById, updateTag } from "../../redux/Actions/tagsActions";
 import { useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import DvrIcon from "@mui/icons-material/Dvr";
 
 const EditTags = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  const tagsState = useSelector((state) => state.tag); // Assuming you have a tags reducer
   const { id } = useParams();
 
-  const [title, setTitle] = useState(""); // State for title
-  const [status, setStatus] = useState("Active"); // State for status
+  const [title, setTitle] = useState("");
+  const [status, setStatus] = useState("Active");
   const [errors, setErrors] = useState({ title: "" });
 
+  const { success, error: bannerError, loading, selectedTag } = useSelector(
+    (state) => state.tag
+  );
+
   useEffect(() => {
-    // Fetch existing tag if editing
     if (id) {
       dispatch(getTagById(id));
     }
   }, [dispatch, id]);
 
   useEffect(() => {
-    // Populate the fields if fetched from the state
-    if (tagsState.selectedTag) {
-      setTitle(tagsState.selectedTag.title); // Correctly accessing selectedTag
-      setStatus(tagsState.selectedTag.status || "Active"); // Set default status if not present
+    if (selectedTag) {
+      setTitle(selectedTag.title);
+      setStatus(selectedTag.status || "Active");
     }
-  }, [tagsState.selectedTag]);
+  }, [selectedTag]);
+
+  useEffect(() => {
+    if (success) {
+      Swal.fire("Success!", "Tag updated successfully.", "success");
+      navigate("/tags");
+    } else if (bannerError) {
+      Swal.fire("Error!", bannerError, "error");
+    }
+  }, [success, bannerError, navigate]);
 
   const validate = () => {
     let valid = true;
@@ -55,34 +66,50 @@ const EditTags = () => {
     return valid;
   };
 
+  const handleReset = () => {
+    setTitle("");
+    setStatus("Active");
+    setErrors({ title: "" });
+  };
+
   const handleSubmit = () => {
     setErrors({ title: "" });
 
     if (!validate()) return;
 
-    const tagsData = { title, status }; // Prepare data for update
-    dispatch(updateTag(id, tagsData)); // Dispatch action to update tag
+    const tagsData = { title, status };
+    dispatch(updateTag(id, tagsData));
   };
-
-  useEffect(() => {
-    if (tagsState.loading) return;
-
-    if (tagsState.error) {
-      Swal.fire("Error!", tagsState.error, "error");
-    } else if (tagsState.success) {
-      setTitle("");
-      setStatus("Active"); 
-      navigate('/tags');
-    }
-  }, [tagsState]);
 
   return (
     <Paper elevation={3} style={{ padding: "20px" }}>
-      <Typography variant="h5" gutterBottom align="left">
-        Edit Tags
-      </Typography>
+     <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 20,
+        }}
+      >
+        <Typography variant="h5" gutterBottom>
+          Edit Tag
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => navigate("/tags")}
+          startIcon={<DvrIcon />}
+          style={{
+            textTransform: "none",
+            fontWeight: "bold",
+            borderRadius: 8,
+            padding: "8px 16px",
+          }}
+        >
+          Display Tags
+        </Button>
+      </div>
       <Grid container spacing={2}>
-        <Grid item xs={6}>
+        <Grid item xs={12} md={6}>
           <TextField
             label="Title"
             value={title}
@@ -94,8 +121,8 @@ const EditTags = () => {
           />
         </Grid>
 
-        <Grid item xs={6}>
-          <FormControl fullWidth variant="outlined" required>
+        <Grid item xs={12} md={6}>
+          <FormControl fullWidth variant="outlined">
             <InputLabel>Status</InputLabel>
             <Select
               label="Status"
@@ -108,10 +135,27 @@ const EditTags = () => {
           </FormControl>
         </Grid>
 
-        <Grid item xs={12} container justifyContent="center">
-          <Button variant="contained" color="primary" onClick={handleSubmit}>
-            Update Tags
-          </Button>
+        <Grid item xs={12} container justifyContent="center" spacing={2}>
+          <Grid item>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSubmit}
+              disabled={loading}
+              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+            >
+              {loading ? "Updating..." : "Update"}
+            </Button>
+          </Grid>
+          <Grid item>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={handleReset}
+            >
+              Reset
+            </Button>
+          </Grid>
         </Grid>
       </Grid>
     </Paper>
