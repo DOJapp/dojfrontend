@@ -77,7 +77,9 @@ const BankDetails = ({ partner }) => {
   const validate = (field, value) => {
     switch (field) {
       case "bankName":
-        return value.length === 0 ? "Bank Name is required" : "";
+        return /^[A-Za-z\s]+$/.test(value)
+          ? ""
+          : "Bank Name must only contain letters and spaces";
       case "accountNumber":
         return !/^[0-9]{12,16}$/.test(value) ? "Account Number must be 12-16 digits" : "";
       case "ifscCode":
@@ -85,7 +87,9 @@ const BankDetails = ({ partner }) => {
           ? "IFSC Code must be in the format XXXX0XXXXX (e.g., SBIN0000123)"
           : "";
       case "accountHolderName":
-        return value.length === 0 ? "Account Holder Name is required" : "";
+        return /^[A-Za-z\s]+$/.test(value)
+          ? ""
+          : "Account Holder Name must only contain letters and spaces";
       default:
         return "";
     }
@@ -102,6 +106,10 @@ const BankDetails = ({ partner }) => {
       const formattedIfscValue = formatIfscCode(value);
       setFormData({ ...formData, [name]: formattedIfscValue });
       setFormErrors({ ...formErrors, [name]: validate(name, formattedIfscValue) });
+    } else if (name === "bankName" || name === "accountHolderName") {
+      const capitalizedValue = value.replace(/[^A-Za-z\s]/g, "").toUpperCase();
+      setFormData({ ...formData, [name]: capitalizedValue });
+      setFormErrors({ ...formErrors, [name]: validate(name, capitalizedValue) });
     } else {
       setFormData({ ...formData, [name]: value });
       setFormErrors({ ...formErrors, [name]: validate(name, value) });

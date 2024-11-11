@@ -20,10 +20,11 @@ import BankDetails from "./BankDetails.js";
 import { connect, useDispatch, useSelector } from "react-redux";
 import Loader from "../../Components/loading/Loader.js";
 import { useNavigate } from "react-router-dom";
-import Swal from "sweetalert2"; // Import Swal for alerts
+import Swal from "sweetalert2";
 import { createPartner } from "../../redux/Actions/partnerActions.js";
+import List from "@mui/icons-material/List";
 
-// Partner Details Component
+
 const PartnerDetails = ({ partner, handleFileChange, onRemove }) => {
   return (
     <Grid item xs={12}>
@@ -150,7 +151,7 @@ const PartnerDetails = ({ partner, handleFileChange, onRemove }) => {
   );
 };
 
-// Main AddPartner Component
+
 const AddPartner = () => {
   const navigate = useNavigate();
   const [error, setError] = useState({});
@@ -280,13 +281,13 @@ const AddPartner = () => {
   };
   // Handle form submission
   const handleSubmit = async () => {
-   
+
     // const validationErrors = validateForm();
     // if (Object.keys(validationErrors).length > 0) {
     //   setError(validationErrors);
     //   return;
     // }
-    console.log("ctesf",error);
+    console.log("ctesf", error);
     let formData;
     if (companyDetails.gstSelected === "No") {
       formData = {
@@ -433,9 +434,26 @@ const AddPartner = () => {
 
   return (
     <Paper elevation={3} style={{ padding: "20px" }}>
-      <Typography variant="h5" gutterBottom align="left">
-        Add Partner
-      </Typography>
+
+      <Grid item xs={12}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+          <Typography variant="h6">Display Partner</Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate("/partners")}
+            startIcon={<List />}
+            style={{
+              textTransform: "none",
+              fontWeight: "bold",
+              borderRadius: 8,
+              padding: "8px 16px",
+            }}
+          >
+            Add Partner
+          </Button>
+        </div>
+      </Grid>
       <Grid container spacing={2}>
         <Grid item xs={12} md={6}>
           <FormControl fullWidth variant="outlined" required>
@@ -479,6 +497,36 @@ const AddPartner = () => {
             />
             <Grid item xs={12} md={6}>
               <TextField
+                label="Firm Name"
+                variant="outlined"
+                required
+                fullWidth
+                name="firmName"
+                value={companyDetails.firmName || ""}
+                onChange={handleInputChange}
+                error={!!error.firmName}
+                helperText={error.firmName}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                label="Firm Address"
+                variant="outlined"
+                required
+                fullWidth
+                name="firmAddress"
+                value={companyDetails.firmAddress || ""}
+                onChange={handleInputChange}
+                error={!!error.firmAddress}
+                helperText={error.firmAddress}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Typography variant="h6">Firm Details</Typography>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
                 label="Aadhar Number"
                 variant="outlined"
                 required
@@ -498,47 +546,18 @@ const AddPartner = () => {
               error={!!error.aadharFrontImage}
               helperText={error.aadharFrontImage}
             />
-            <Grid item xs={12} md={6}>
-              <TextField
-                label="Firm Name"
-                variant="outlined"
-                required
-                fullWidth
-                name="firmName"
-                value={companyDetails.firmName || ""}
-                onChange={handleInputChange}
-                error={!!error.firmName}
-                helperText={error.firmName}
-              />
-            </Grid>
-            <FileUpload
-              label="Upload Aadhar Back Image"
-              onChange={(e) => handleFileChange(e, "aadharBackImage")}
-              preview={companyDetails.aadharBackImage}
-              error={!!error.aadharBackImage}
-              helperText={error.aadharBackImage}
-            />
-            
-            <Grid item xs={12} md={6}>
-              <TextField
-                label="Firm Address"
-                variant="outlined"
-                required
-                fullWidth
-                name="firmAddress"
-                value={companyDetails.firmAddress || ""}
-                onChange={handleInputChange}
-                error={!!error.firmAddress}
-                helperText={error.firmAddress}
-              />
-            </Grid>
             <Grid item xs={12} md={6} container spacing={2}>
               <Grid item xs={12} md={12}>
                 <Button
                   variant="contained"
                   component="label"
                   fullWidth
-                  style={{ backgroundColor: "#3f51b5", color: "#fff" }}
+                  style={{
+                    padding: "6px 10px",
+                    color: "#fff",
+                    borderRadius: 8,
+                    background: "#1976d2"
+                  }}
                 >
                   Upload Document
                   <input
@@ -583,6 +602,16 @@ const AddPartner = () => {
                   )}
               </Grid>
             </Grid>
+            <FileUpload
+              label="Upload Aadhar Back Image"
+              onChange={(e) => handleFileChange(e, "aadharBackImage")}
+              preview={companyDetails.aadharBackImage}
+              error={!!error.aadharBackImage}
+              helperText={error.aadharBackImage}
+            />
+
+
+
             <BankDetails
               partner={companyDetails}
               handleBankDetailsChange={handleBankDetailsChange}
@@ -877,6 +906,13 @@ const AddPartner = () => {
             fullWidth
             onClick={handleSubmit}
             disabled={partnerState.loading}
+            style={{
+              textTransform: "none",
+              borderRadius: 5,
+              padding: "6px 10px",
+              color: "#fff",
+              background: "#1976d2"
+            }}
           >
             {partnerState.loading ? <CircularProgress size={24} /> : "Submit"}
           </Button>

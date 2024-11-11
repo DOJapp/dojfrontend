@@ -10,20 +10,31 @@ import {
   FormControl,
   InputLabel,
   CircularProgress,
+  Avatar,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { getCategories } from "../../redux/Actions/categoryActions";
 import { getProductById, updateProduct } from "../../redux/Actions/productActions";
-import { useParams, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { useParams, useNavigate } from "react-router-dom";
+import List from "@mui/icons-material/List";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 const EditProduct = () => {
   const dispatch = useDispatch();
-  const categories = useSelector((state) => state.category.categories);
-  const { success, error, loading } = useSelector((state) => state.product);
-
-  const { id } = useParams();
   const navigate = useNavigate();
+  const { id } = useParams(); // Get the product ID from the URL params
+
+  const categories = useSelector((state) => state.category.categories);
+  const { success, error, loading, product: fetchedProduct } = useSelector((state) => state.product); // Assuming product state has fetchedProduct
+
+  const [openImagePreview, setOpenImagePreview] = useState(false);
+  const [openGalleryImagePreview, setOpenGalleryImagePreview] = useState(false);
 
   const [product, setProduct] = useState({
     name: "",
@@ -36,149 +47,77 @@ const EditProduct = () => {
     deliveryMode: "",
   });
 
+  const [galleryImages, setGalleryImages] = useState([]);
   const [status, setStatus] = useState("Active");
   const [imagePreview, setImagePreview] = useState(null);
-  const [errors, setErrors] = useState({
-    name: "",
-    categoryId: "",
-    price: "",
-    quantity: "",
-    deliveryMode: "",
-    image: "",
-  });
+  const [galleryPreview, setGalleryPreview] = useState([]);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     dispatch(getCategories());
     if (id) {
-      dispatch(getProductById(id));
+      dispatch(getProductById(id)); 
     }
   }, [dispatch, id]);
 
   useEffect(() => {
-    if (id && categories.length > 0) {
-      const productData = categories.find((category) => category._id === id);
-      if (productData) {
-        setProduct({
-          name: productData.name,
-          description: productData.description,
-          categoryId: productData.categoryId,
-          price: productData.price,
-          discount: productData.discount,
-          quantity: productData.quantity,
-          image: null,
-          deliveryMode: productData.deliveryMode,
-        });
-        setImagePreview(productData.image);
-        setStatus(productData.status);
-      }
+    if (fetchedProduct) {
+      setProduct({
+        name: fetchedProduct.name,
+        description: fetchedProduct.description,
+        categoryId: fetchedProduct.categoryId,
+        price: fetchedProduct.price,
+        discount: fetchedProduct.discount,
+        quantity: fetchedProduct.quantity,
+        image: null,
+        deliveryMode: fetchedProduct.deliveryMode,
+      });
+      setImagePreview(fetchedProduct.image);
+      setStatus(fetchedProduct.status);
+      setGalleryPreview(fetchedProduct.galleryImages || []);
     }
-  }, [id, categories]);
+  }, [fetchedProduct]);
 
-  const handleUpdateResult = () => {
-    if (success) {
-      Swal.fire("Success!", "Product updated successfully!", "success");
-      navigate("/products");
-      handleReset();
-    } else if (error) {
-      Swal.fire("Error!", error, "error");
+  const validate = () => {
+    const newErrors = {};
+    if (!product.name) newErrors.name = "Name is required.";
+    if (!product.categoryId) newErrors.categoryId = "Category is required.";
+    if (!product.price) newErrors.price = "Price is required.";
+    if (!product.quantity) newErrors.quantity = "Quantity is required.";
+    if (!product.deliveryMode) newErrors.deliveryMode = "Delivery mode is required.";
+
+    if (parseFloat(product.discount) > parseFloat(product.price)) {
+      newErrors.discount = "Discount cannot be greater than price.";
     }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
-
-  useEffect(() => {
-    handleUpdateResult();
-  }, [success, error]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
+    if ((name === "price" || name === "discount" || name === "quantity") && !/^\d*\.?\d*$/.test(value)) {
+      return;
+    }
+
     if (files) {
-      const file = files[0];
-      setProduct((prev) => ({
-        ...prev,
-        [name]: file,
-      }));
-      setImagePreview(URL.createObjectURL(file));
+      if (name === "galleryImages") {
+        const selectedFiles = Array.from(files);
+        setGalleryImages(selectedFiles);
+        setGalleryPreview(selectedFiles.map((file) => URL.createObjectURL(file)));
+      } else {
+        const file = files[0];
+        setProduct((prev) => ({ ...prev, [name]: file }));
+        setImagePreview(URL.createObjectURL(file));
+      }
     } else {
-      setProduct((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
+      setProduct((prev) => ({ ...prev, [name]: value }));
     }
-  };
-
-  const handleReset = () => {
-    setProduct({
-      name: "",
-      description: "",
-      categoryId: "",
-      price: "",
-      discount: "",
-      quantity: "",
-      image: null,
-      deliveryMode: "",
-    });
-    setStatus("Active");
-    setImagePreview(null);
-    setErrors({
-      name: "",
-      categoryId: "",
-      price: "",
-      quantity: "",
-      deliveryMode: "",
-      image: "",
-    });
-  };
-
-  const validate = () => {
-    let valid = true;
-    const newErrors = {
-      name: "",
-      categoryId: "",
-      price: "",
-      quantity: "",
-      deliveryMode: "",
-      image: "",
-    };
-
-    if (!product.name) {
-      newErrors.name = "Name is required.";
-      valid = false;
-    }
-    if (!product.categoryId) {
-      newErrors.categoryId = "Category is required.";
-      valid = false;
-    }
-    if (!product.price) {
-      newErrors.price = "Price is required.";
-      valid = false;
-    }
-    if (!product.quantity) {
-      newErrors.quantity = "Quantity is required.";
-      valid = false;
-    }
-    if (!product.deliveryMode) {
-      newErrors.deliveryMode = "Delivery mode is required.";
-      valid = false;
-    }
-    if (!product.image && !imagePreview) {
-      newErrors.image = "Image is required.";
-      valid = false;
-    }
-
-    setErrors(newErrors);
-    return valid;
+    validate();
   };
 
   const handleSubmit = () => {
-    setErrors({
-      name: "",
-      categoryId: "",
-      price: "",
-      quantity: "",
-      deliveryMode: "",
-      image: "",
-    });
-
     if (!validate()) return;
 
     const formData = new FormData();
@@ -194,14 +133,67 @@ const EditProduct = () => {
     formData.append("deliveryMode", product.deliveryMode);
     formData.append("status", status);
 
+    galleryImages.forEach((file) => {
+      formData.append("galleryImages", file);
+    });
+
     dispatch(updateProduct(id, formData));
   };
 
+  const handleReset = () => {
+    setProduct({
+      name: "",
+      description: "",
+      categoryId: "",
+      price: "",
+      discount: "",
+      quantity: "",
+      image: null,
+      deliveryMode: "",
+    });
+    setGalleryImages([]);
+    setGalleryPreview([]);
+    setStatus("Active");
+    setImagePreview(null);
+    setErrors({});
+  };
+
+  const handleUpdateResult = () => {
+    if (success) {
+      Swal.fire("Success!", "Product updated successfully!", "success");
+      navigate("/products");
+      handleReset();
+    } else if (error) {
+      Swal.fire("Error!", error, "error");
+    }
+  };
+
+  useEffect(() => {
+    handleUpdateResult();
+  }, [success, error]);
+
   return (
-    <Paper elevation={3} style={{ padding: "20px" }}>
-      <Typography variant="h5" gutterBottom align="left">
-        Edit Product
-      </Typography>
+    <Paper elevation={3} sx={{ padding: 2 }}>
+      <Grid item xs={12}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+          <Typography variant="h6">Edit Product</Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate("/products")}
+            startIcon={<List />}
+            style={{
+              textTransform: "none",
+              fontWeight: "bold",
+              borderRadius: 8,
+              padding: "8px 16px",
+            }}
+          >
+            Display Product
+          </Button>
+        </div>
+      </Grid>
+
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6}>
           <TextField
@@ -209,16 +201,14 @@ const EditProduct = () => {
             name="name"
             value={product.name}
             onChange={handleChange}
-            variant="outlined"
             fullWidth
-            required
             error={!!errors.name}
             helperText={errors.name}
           />
         </Grid>
 
         <Grid item xs={12} sm={6}>
-          <FormControl fullWidth required variant="outlined" error={!!errors.categoryId}>
+          <FormControl fullWidth error={!!errors.categoryId}>
             <InputLabel>Category</InputLabel>
             <Select
               label="Category"
@@ -232,7 +222,11 @@ const EditProduct = () => {
                 </MenuItem>
               ))}
             </Select>
-            {errors.categoryId && <p style={{ color: "red" }}>{errors.categoryId}</p>}
+            {errors.categoryId && (
+              <Typography color="error" variant="caption">
+                {errors.categoryId}
+              </Typography>
+            )}
           </FormControl>
         </Grid>
 
@@ -240,12 +234,9 @@ const EditProduct = () => {
           <TextField
             label="Price"
             name="price"
-            type="number"
             value={product.price}
             onChange={handleChange}
-            variant="outlined"
             fullWidth
-            required
             error={!!errors.price}
             helperText={errors.price}
           />
@@ -255,10 +246,10 @@ const EditProduct = () => {
           <TextField
             label="Discount"
             name="discount"
-            type="number"
             value={product.discount}
             onChange={handleChange}
-            variant="outlined"
+            error={!!errors.discount}
+            helperText={errors.discount}
             fullWidth
           />
         </Grid>
@@ -267,51 +258,16 @@ const EditProduct = () => {
           <TextField
             label="Quantity"
             name="quantity"
-            type="number"
             value={product.quantity}
             onChange={handleChange}
-            variant="outlined"
             fullWidth
-            required
             error={!!errors.quantity}
             helperText={errors.quantity}
           />
         </Grid>
 
-        <Grid item xs={12} sm={6} container spacing={2} alignItems="center">
-          <Grid item xs={8}>
-            <Button variant="outlined" component="label" fullWidth required>
-              Upload Image
-              <input
-                type="file"
-                name="image"
-                hidden
-                accept="image/*"
-                onChange={handleChange}
-              />
-            </Button>
-            {errors.image && <p style={{ color: "red" }}>{errors.image}</p>}
-          </Grid>
-          {imagePreview && (
-            <Grid item xs={4}>
-              <div className="image-preview">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  style={{ width: "100%", height: "auto" }}
-                />
-              </div>
-            </Grid>
-          )}
-        </Grid>
-
         <Grid item xs={12} sm={6}>
-          <FormControl
-            fullWidth
-            required
-            variant="outlined"
-            error={!!errors.deliveryMode}
-          >
+          <FormControl fullWidth error={!!errors.deliveryMode}>
             <InputLabel>Delivery Mode</InputLabel>
             <Select
               label="Delivery Mode"
@@ -319,77 +275,191 @@ const EditProduct = () => {
               value={product.deliveryMode}
               onChange={handleChange}
             >
-              <MenuItem value="PickUp">PickUp</MenuItem>
-              <MenuItem value="Delivery">Delivery</MenuItem>
+              <MenuItem value="instant">Instant</MenuItem>
+              <MenuItem value="scheduled">Scheduled</MenuItem>
             </Select>
             {errors.deliveryMode && (
-              <p style={{ color: "red" }}>{errors.deliveryMode}</p>
+              <Typography color="error" variant="caption">
+                {errors.deliveryMode}
+              </Typography>
             )}
           </FormControl>
         </Grid>
 
-        <Grid item xs={12} sm={6}>
-          <FormControl fullWidth variant="outlined" required>
+        <Grid item xs={12} md={6}>
+          <FormControl fullWidth>
             <InputLabel>Status</InputLabel>
-            <Select
-              label="Status"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-            >
+            <Select label="Status" value={status} onChange={(e) => setStatus(e.target.value)}>
               <MenuItem value="Active">Active</MenuItem>
               <MenuItem value="Blocked">Blocked</MenuItem>
             </Select>
           </FormControl>
         </Grid>
 
-        <Grid item xs={12} sm={12}>
-          <TextField
-            label="Description"
-            name="description"
-            value={product.description}
-            onChange={handleChange}
+        <Grid item xs={12} md={6}>
+          <Button
             variant="outlined"
-            fullWidth
-            multiline
+            component="label"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: "6px 10px",
+              fontWeight: "bold",
+              borderRadius: 8,
+              background: "#1976d2",
+              color: "#fff",
+            }}
+          >
+            Upload Image
+            <input
+              type="file"
+             
+              hidden
+              name="image"
+              accept="image/*"
+              onChange={handleChange}
+            />
+          </Button>
+          {errors.image && <Typography variant="caption" color="error" sx={{ display: "block", mt: 1 }}>{errors.image}</Typography>}
+          {imagePreview && (
+            <Avatar
+              src={imagePreview}
+              sx={{
+                width: 100,
+                height: 100,
+                mt: 2,
+                cursor: "pointer",
+                border: "2px solid #ccc",
+                objectFit: "cover",
+              }}
+              onClick={() => setOpenImagePreview(true)}
+            />
+          )}
+        </Grid>
+
+        <Grid item xs={12} sm={6}>
+          <Button
+            variant="outlined"
+            component="label"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: "6px 10px",
+              fontWeight: "bold",
+              borderRadius: 8,
+              background: "#1976d2",
+              color: "#fff",
+            }}
+          >
+            Upload Gallery Images
+            <input
+              type="file"
+              hidden
+              accept="image/*"
+              multiple
+              name="galleryImages"
+              onChange={handleChange}
+            />
+          </Button>
+          {galleryPreview.length > 0 && (
+            <Grid container spacing={2} mt={2}>
+              {galleryPreview.map((image, index) => (
+                <Grid item xs={4} key={index}>
+                  <Avatar
+                    src={image}
+                    sx={{
+                      width: 100,
+                      height: 100,
+                      cursor: "pointer",
+                      border: "2px solid #ccc",
+                      objectFit: "cover",
+                    }}
+                    onClick={() => setOpenGalleryImagePreview(true)}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          )}
+        </Grid>
+
+        <Grid item xs={12}>
+          <Typography variant="body1" gutterBottom>Description</Typography>
+          <ReactQuill
+            value={product.description}
+            onChange={(value) => setProduct((prev) => ({ ...prev, description: value }))}
           />
+          {errors.description && (
+            <Typography color="error" variant="caption" sx={{ display: "block", mt: 1 }}>
+              {errors.description}
+            </Typography>
+          )}
         </Grid>
 
         <Grid item xs={12} container justifyContent="center" spacing={2}>
           <Grid item>
             <Button
               onClick={handleSubmit}
-              disabled={loading}
               variant="contained"
-              sx={{
-                color: "white",
-                backgroundColor: "primary.main",
-                textTransform: "none",
-                px: 3,
-              }}
+              color="primary"
+              disabled={loading}
+              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
             >
-              {loading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "Update"
-              )}
+              {loading ? "Loading..." : "Submit"}
             </Button>
           </Grid>
           <Grid item>
             <Button
               onClick={handleReset}
-              variant="outlined"
-              sx={{
+              variant="contained"
+              color="secondary"
+              style={{
                 textTransform: "none",
-                color: "secondary.main",
-                borderColor: "secondary.main",
-                px: 3,
+                borderRadius: 5,
+                padding: "6px 10px",
               }}
             >
-              Reset
+              RESET
             </Button>
           </Grid>
         </Grid>
       </Grid>
+
+      <Dialog open={openImagePreview} onClose={() => setOpenImagePreview(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Image Preview</DialogTitle>
+        <DialogContent>
+          <img src={imagePreview} alt="Preview" style={{ width: "100%", height: "380px", borderRadius: "8px" }} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenImagePreview(false)} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={openGalleryImagePreview}
+        onClose={() => setOpenGalleryImagePreview(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Gallery Image Preview</DialogTitle>
+        <DialogContent>
+          {galleryPreview.map((image, index) => (
+            <img
+              key={index}
+              src={image}
+              alt={`Gallery Preview ${index}`}
+              style={{ width: "100%", height: "380px", borderRadius: "8px", marginBottom: 10 }}
+            />
+          ))}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenGalleryImagePreview(false)} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 };

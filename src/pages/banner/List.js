@@ -25,7 +25,10 @@ const BannerList = () => {
   };
 
   const handleDelete = (rowData) => {
-    dispatch(deleteBanner(rowData._id));
+    // Confirmation prompt before deleting
+    if (window.confirm(`Are you sure you want to delete banner: ${rowData._id}?`)) {
+      dispatch(deleteBanner(rowData._id));
+    }
   };
 
   const handleClickOpen = (image) => {
@@ -50,7 +53,6 @@ const BannerList = () => {
   };
 
   const displayTable = () => (
-
     <Paper elevation={3} style={{ padding: "10px", borderRadius: "8px" }}>
       <MaterialTable
         title="Banners"
@@ -63,14 +65,16 @@ const BannerList = () => {
           { title: "S.No", field: "serial" },
           {
             title: "Redirect To",
-            render: (rowData) =>
-              rowData.redirectTo ? rowData.redirectTo : "N/A",
+            render: (rowData) => (rowData.redirectTo ? rowData.redirectTo : "N/A"),
           },
           {
             title: "Product Name",
-            field: "productId.name",
-            render: (rowData) =>
-              rowData.redirectTo === "product" ? rowData.productId?.name || "N/A" : "N/A",
+            render: (rowData) => {
+              if (rowData.redirectTo === "product" && rowData.productId) {
+                return rowData.productId.name || "N/A";  // Directly access name from productId object
+              }
+              return "N/A";
+            },
           },
           {
             title: "Image",
@@ -78,7 +82,7 @@ const BannerList = () => {
             render: (rowData) => (
               <img
                 src={rowData.image || "fallback_image_url"}
-                alt={rowData.title}
+                alt={rowData.title || "No Title"}
                 style={{ width: 50, height: 50, cursor: "pointer" }}
                 onClick={() => handleClickOpen(rowData.image)}
               />
@@ -93,7 +97,7 @@ const BannerList = () => {
                 <Chip label="Blocked" size="small" variant="outlined" color="error" />
               ),
           },
-          { title: "Created At", field: "formattedDate" },
+          { title: "Created Date", field: "formattedDate" },
           {
             title: "Action",
             render: (rowData) => (
@@ -141,7 +145,6 @@ const BannerList = () => {
         ]}
       />
     </Paper>
-
   );
 
   if (error) {
@@ -151,10 +154,14 @@ const BannerList = () => {
   return (
     <>
       {displayTable()}
-      <Dialog open={open} onClose={handleClose} maxWidth="sm" >
+      <Dialog open={open} onClose={handleClose} maxWidth="sm">
         <DialogTitle>Banner Image</DialogTitle>
         <DialogContent>
-          <img src={selectedImage || "fallback_image_url"} alt="Selected banner" style={{ width: "100%" }} />
+          <img
+            src={selectedImage || "fallback_image_url"}
+            alt="Selected banner"
+            style={{ width: "100%" }}
+          />
         </DialogContent>
       </Dialog>
     </>

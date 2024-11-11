@@ -22,11 +22,14 @@ import { createProduct } from "../../redux/Actions/productActions";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import List from "@mui/icons-material/List";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 const AddProduct = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [openImagePreview, setOpenImagePreview] = useState(false);
+  const [openGalleryImagePreview, setOpenGalleryImagePreview] = useState(false);
 
   const categories = useSelector((state) => state.category.categories);
   const { success, error, loading } = useSelector((state) => state.product);
@@ -42,8 +45,10 @@ const AddProduct = () => {
     deliveryMode: "",
   });
 
+  const [galleryImages, setGalleryImages] = useState([]);
   const [status, setStatus] = useState("Active");
   const [imagePreview, setImagePreview] = useState(null);
+  const [galleryPreview, setGalleryPreview] = useState([]);
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -59,7 +64,6 @@ const AddProduct = () => {
     if (!product.deliveryMode) newErrors.deliveryMode = "Delivery mode is required.";
     if (!product.image) newErrors.image = "Image is required.";
 
-    // Check if discount is greater than price
     if (parseFloat(product.discount) > parseFloat(product.price)) {
       newErrors.discount = "Discount cannot be greater than price.";
     }
@@ -71,29 +75,35 @@ const AddProduct = () => {
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
-    // For price and discount fields, allow only numbers and decimals
-    if ((name === "price" || name === "discount") && !/^\d*\.?\d*$/.test(value)) {
-      return; // Prevent change if value doesn't match the pattern
+    if ((name === "price" || name === "discount" || name === "quantity") && !/^\d*\.?\d*$/.test(value)) {
+      return;
     }
 
     if (files) {
-      const file = files[0];
-      setProduct((prev) => ({ ...prev, [name]: file }));
-      setImagePreview(URL.createObjectURL(file)); // Set image preview
+      if (name === "galleryImages") {
+        const selectedFiles = Array.from(files);
+        setGalleryImages(selectedFiles);
+        setGalleryPreview(selectedFiles.map((file) => URL.createObjectURL(file)));
+      } else {
+        const file = files[0];
+        setProduct((prev) => ({ ...prev, [name]: file }));
+        setImagePreview(URL.createObjectURL(file));
+      }
     } else {
       setProduct((prev) => ({ ...prev, [name]: value }));
     }
-
-    validate(); // Re-run validation after changes
+    validate();
   };
+
 
   const handleIcon = (e) => {
     const file = e.target.files[0];
     if (file) {
       setProduct((prev) => ({ ...prev, image: file }));
-      setImagePreview(URL.createObjectURL(file)); // Set image preview
+      setImagePreview(URL.createObjectURL(file));
     }
   };
+
 
   const handleSubmit = () => {
     if (!validate()) return;
@@ -109,7 +119,11 @@ const AddProduct = () => {
     formData.append("deliveryMode", product.deliveryMode);
     formData.append("status", status);
 
-    dispatch(createProduct(formData)); // Dispatch the action to create product
+    galleryImages.forEach((file) => {
+      formData.append("galleryImages", file);
+    });
+
+    dispatch(createProduct(formData));
   };
 
   const handleReset = () => {
@@ -123,22 +137,24 @@ const AddProduct = () => {
       image: null,
       deliveryMode: "",
     });
-    setStatus("Active");
+    setGalleryImages([]);
+    setGalleryPreview([]);
+    setStatus("Active ");
     setImagePreview(null);
     setErrors({});
   };
 
   const handleUpdateResult = () => {
     if (success) {
-      navigate("/products"); // Navigate to products page on success
+      navigate("/products");
       handleReset();
     } else if (error) {
-      Swal.fire("Error!", error, "error"); // Show error message if something goes wrong
+      Swal.fire("Error!", error, "error");
     }
   };
 
   useEffect(() => {
-    if (success || error) handleUpdateResult(); // Trigger result handling on success or error
+    if (success || error) handleUpdateResult();
   }, [success, error]);
 
   return (
@@ -235,44 +251,6 @@ const AddProduct = () => {
           />
         </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Button
-            variant="outlined"
-            component="label"
-            sx={{
-              width: "100%",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              padding: "10px 16px",
-              textTransform: "none",
-              fontWeight: "bold",
-              borderRadius: 8,
-            }}
-          >
-            Upload Picture
-            <input
-              type="file"
-              hidden
-              accept="image/*"
-              onChange={handleIcon}
-            />
-          </Button>
-          {errors.image && <Typography variant="caption" color="error" sx={{ display: "block", mt: 1 }}>{errors.image}</Typography>}
-          <Avatar
-            src={imagePreview}
-            sx={{
-              width: 120,
-              height: 120,
-              mt: 2,
-              cursor: "pointer",
-              border: "2px solid #ccc",
-              objectFit: "cover",
-            }}
-            onClick={() => setOpenImagePreview(true)}
-          />
-        </Grid>
-
         <Grid item xs={12} sm={6}>
           <FormControl fullWidth error={!!errors.deliveryMode}>
             <InputLabel>Delivery Mode</InputLabel>
@@ -293,7 +271,6 @@ const AddProduct = () => {
             )}
           </FormControl>
         </Grid>
-
         <Grid item xs={12} md={6}>
           <FormControl fullWidth>
             <InputLabel>Status</InputLabel>
@@ -304,17 +281,102 @@ const AddProduct = () => {
           </FormControl>
         </Grid>
 
+        <Grid item xs={12} md={6}>
+          <Button
+            variant="outlined"
+            component="label"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: "6px 10px",
+              fontWeight: "bold",
+              borderRadius: 8,
+              background: "#1976d2",
+              color: "#fff",
+            }}
+          >
+            Upload Image
+            <input
+              type="file"
+              hidden
+              accept="image/*"
+              onChange={handleIcon}
+            />
+          </Button>
+          {errors.image && <Typography variant="caption" color="error" sx={{ display: "block", mt: 1 }}>{errors.image}</Typography>}
+          {imagePreview && (
+            <Avatar
+              src={imagePreview}
+              sx={{
+                width: 100,
+                height: 100,
+                mt: 2,
+                cursor: "pointer",
+                border: "2px solid #ccc",
+                objectFit: "cover",
+              }}
+              onClick={() => setOpenImagePreview(true)}
+            />
+          )}
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <Button
+            variant="outlined"
+            component="label"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: "6px 10px",
+              fontWeight: "bold",
+              borderRadius: 8,
+              background: "#1976d2",
+              color: "#fff",
+            }}
+          >
+            Upload Gallery Images
+            <input
+              type="file"
+              hidden
+              accept="image/*"
+              multiple
+              name="galleryImages"
+              onChange={handleChange}
+            />
+          </Button>
+          {galleryPreview.length > 0 && (
+            <Grid container spacing={2} mt={2}>
+              {galleryPreview.map((image, index) => (
+                <Grid item xs={4} key={index}>
+                  <Avatar
+                    src={image}
+                    sx={{
+                      width: 100,
+                      height: 100,
+                      cursor: "pointer",
+                      border: "2px solid #ccc",
+                      objectFit: "cover",
+                    }}
+                    onClick={() => setOpenGalleryImagePreview(true)}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          )}
+        </Grid>
+
         <Grid item xs={12}>
-          <TextField
-            label="Description"
-            name="description"
+          <Typography variant="body1" gutterBottom>Description</Typography>
+          <ReactQuill
             value={product.description}
-            onChange={handleChange}
-            error={!!errors.description}
-            helperText={errors.description}
-            fullWidth
-            multiline
+            onChange={(value) => setProduct((prev) => ({ ...prev, description: value }))}
           />
+          {errors.description && (
+            <Typography color="error" variant="caption" sx={{ display: "block", mt: 1 }}>
+              {errors.description}
+            </Typography>
+          )}
         </Grid>
 
         <Grid item xs={12} container justifyContent="center" spacing={2}>
@@ -330,21 +392,52 @@ const AddProduct = () => {
             </Button>
           </Grid>
           <Grid item>
-            <Button onClick={handleReset} variant="contained" color="secondary">
-              Reset
+            <Button
+              onClick={handleReset}
+              variant="contained"
+              color="secondary"
+              style={{
+                textTransform: "none",
+                borderRadius: 5,
+                padding: "6px 10px",
+              }}
+            >
+              RESET
             </Button>
           </Grid>
         </Grid>
       </Grid>
 
-      {/* Image Preview Dialog */}
       <Dialog open={openImagePreview} onClose={() => setOpenImagePreview(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Image Preview</DialogTitle>
         <DialogContent>
-          <img src={imagePreview} alt="Preview" style={{ width: "100%", borderRadius: "8px" }} />
+          <img src={imagePreview} alt="Preview" style={{ width: "100%",height:"380px", borderRadius: "8px" }} />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenImagePreview(false)} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={openGalleryImagePreview}
+        onClose={() => setOpenGalleryImagePreview(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Gallery Image Preview</DialogTitle>
+        <DialogContent>
+          {galleryPreview.map((image, index) => (
+            <img
+              key={index}
+              src={image}
+              alt={`Gallery Preview ${index}`}
+              style={{ width: "100%",height:"380px", borderRadius: "8px", marginBottom: 10 }}
+            />
+          ))}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenGalleryImagePreview(false)} color="primary">
             Close
           </Button>
         </DialogActions>

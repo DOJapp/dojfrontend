@@ -8,8 +8,14 @@ const FileUpload = ({ label, onChange, preview, error, helperText }) => (
       <Button
         variant="contained"
         component="label"
+        color="primary"
         fullWidth
-        style={{ backgroundColor: "#3f51b5", color: "#fff" }}
+        style={{
+          padding: "6px 10px",
+          color: "#fff",
+          borderRadius:8,
+          background:"#1976d2"
+        }}
       >
         {label}
         <input type="file" hidden accept="image/*" onChange={onChange} />

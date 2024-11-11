@@ -25,15 +25,16 @@ const routes = [
     icon: <BiAbacus />,
     subRoutes: [
       {
-        path: "/category",
-        name: "List",
-        icon: <BiAbacus />,
-      },
-      {
         path: "/category/add",
         name: "Add Category",
         icon: <BiAbacus />,
       },
+      {
+        path: "/category",
+        name: "List",
+        icon: <BiAbacus />,
+      },
+     
     ],
   },
   {
@@ -42,15 +43,16 @@ const routes = [
     icon: <BiAbacus />,
     subRoutes: [
       {
-        path: "/tags",
-        name: "List",
-        icon: <BiAbacus />,
-      },
-      {
         path: "/tags/add",
         name: "Add Tags",
         icon: <BiAbacus />,
       },
+      {
+        path: "/tags",
+        name: "List",
+        icon: <BiAbacus />,
+      },
+      
     ],
   },
   {
@@ -59,15 +61,16 @@ const routes = [
     icon: <BiAbacus />,
     subRoutes: [
       {
-        path: "/products", // This route will show the list of products
-        name: "List",
-        icon: <BiAbacus />,
-      },
-      {
-        path: "/products/add", // This route will show the add product form
+        path: "/products/add", 
         name: "Add Products",
         icon: <BiAbacus />,
       },
+      {
+        path: "/products", 
+        name: "List",
+        icon: <BiAbacus />,
+      },
+      
     ],
   },
   {
@@ -76,15 +79,16 @@ const routes = [
     icon: <BiAbacus />,
     subRoutes: [
       {
-        path: "/partners", 
-        name: "List",
-        icon: <BiAbacus />,
-      },
-      {
         path: "/partners/add", 
         name: "Add",
         icon: <BiAbacus />,
       },
+      {
+        path: "/partners", 
+        name: "List",
+        icon: <BiAbacus />,
+      },
+      
     ],
   },
   {
@@ -93,15 +97,16 @@ const routes = [
     icon: <BiAbacus />,
     subRoutes: [
       {
-        path: "/banner",
-        name: "List",
-        icon: <BiAbacus />,
-      },
-      {
         path: "/banner/add",
         name: "Add Banner",
         icon: <BiAbacus />,
       },
+      {
+        path: "/banner",
+        name: "List",
+        icon: <BiAbacus />,
+      },
+      
     ],
   },
 ];

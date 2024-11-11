@@ -85,7 +85,7 @@ const CategoryList = () => {
               },
               { title: "Title", field: "title" },
               { title: "Status", field: "status" },
-              { title: "Created At", field: "formattedDate" }, // Show the formatted date
+              { title: "Created Date", field: "formattedDate" },
               {
                 title: "Action",
                 render: (rowData) => (

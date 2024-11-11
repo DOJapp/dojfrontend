@@ -103,26 +103,26 @@ const Add = () => {
 
   return (
     <Paper sx={{ padding: 3, margin: "auto", mt: 4 }}>
+      <Grid item xs={12}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+          <Typography variant="h6">Add Banner</Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate("/banner")}
+            startIcon={<List />}
+            style={{
+              textTransform: "none",
+              fontWeight: "bold",
+              borderRadius: 8,
+              padding: "8px 16px",
+            }}
+          >
+            Display Banner
+          </Button>
+        </div>
+      </Grid>
       <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
-            <Typography variant="h6">Add Banner</Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => navigate("/banner")}
-              startIcon={<List />}
-              style={{
-                textTransform: "none",
-                fontWeight: "bold",
-                borderRadius: 8,
-                padding: "8px 16px",
-              }}
-            >
-              Display Banner
-            </Button>
-          </div>
-        </Grid>
 
         <Grid item xs={12} md={6}>
           <FormControl fullWidth variant="outlined" error={!!error.redirectTo} sx={{ minWidth: 120 }}>
@@ -202,15 +202,15 @@ const Add = () => {
           <Button
             variant="outlined"
             component="label"
-            sx={{
-              width: "100%",
+            style={{
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              padding: "10px 16px",
-              textTransform: "none",
+              padding: "6px 10px",
               fontWeight: "bold",
               borderRadius: 8,
+              background:"#1976d2",
+              color: "#fff",
             }}
           >
             Upload Picture
@@ -254,6 +254,11 @@ const Add = () => {
               onClick={handleReset}
               variant="contained"
               color="secondary"
+              style={{
+                textTransform: "none",
+                borderRadius: 5,
+                padding: "6px 10px",
+              }}
             >
               Reset
             </Button>

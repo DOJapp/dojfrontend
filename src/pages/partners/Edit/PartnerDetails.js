@@ -196,6 +196,15 @@ function PartnerDetails({ partner }) {
                 ...prev,
                 ifscCode: validate('ifscCode', formattedIfscValue),
             }));
+        } else if (name === "bankName" || name === "accountHolderName") {
+            const capitalizedValue = value.replace(/[^A-Za-z\s]/g, "").toUpperCase();
+            updatedCompanyDetails[index][name] = capitalizedValue;
+            setCompanyDetails(updatedCompanyDetails);
+
+            setFormErrors((prev) => ({
+                ...prev,
+                [name]: validate(name, capitalizedValue),
+            }));
         } else {
             updatedCompanyDetails[index][name] = value;
             setCompanyDetails(updatedCompanyDetails);
@@ -206,8 +215,6 @@ function PartnerDetails({ partner }) {
             }));
         }
     };
-
-
 
 
     const handleFileChange = (fieldName, index) => (e) => {

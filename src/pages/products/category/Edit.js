@@ -199,7 +199,20 @@ const EditCategory = () => {
         </Grid>
         <Grid item xs={12} sm={6} container spacing={2} alignItems="center">
           <Grid item xs={8}>
-            <Button variant="outlined" component="label" fullWidth required>
+            <Button
+              variant="outlined"
+              component="label"
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                padding: "6px 10px",
+                fontWeight: "bold",
+                borderRadius: 8,
+                background: "#1976d2",
+                color: "#fff",
+              }}
+            >
               Upload Image
               <input
                 type="file"
@@ -241,17 +254,19 @@ const EditCategory = () => {
           <Grid item>
             <Button
               onClick={handleReset}
-              variant="outlined"
-              sx={{
+              variant="contained"
+              color="secondary"
+              style={{
                 textTransform: "none",
-                color: "secondary.main",
-                borderColor: "secondary.main",
-                px: 3,
+                borderRadius: 5,
+                padding: "6px 10px",
+                color: "secondary"
               }}
             >
-              Reset
+              RESET
             </Button>
           </Grid>
+
         </Grid>
       </Grid>
 

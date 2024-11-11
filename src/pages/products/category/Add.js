@@ -187,7 +187,22 @@ const AddCategory = () => {
 
         <Grid item xs={12} sm={6} container spacing={2} alignItems="center">
           <Grid item xs={8}>
-            <Button variant="outlined" component="label" fullWidth required sx={{ mb: 2 }}>
+            <Button
+             fullWidth 
+             required
+             variant="outlined"
+             component="label"
+             style={{
+               display: "flex",
+               justifyContent: "center",
+               alignItems: "center",
+               padding: "6px 10px",
+               fontWeight: "bold",
+               borderRadius: 8,
+               background: "#1976d2",
+               color: "#fff",
+             }}
+            >
               Upload Image
               <input
                 type="file"
@@ -235,8 +250,13 @@ const AddCategory = () => {
               onClick={() => setCategory({ title: "", status: "", image: null })}
               variant="contained"
               color="secondary"
+              style={{
+                textTransform: "none",
+                borderRadius: 5,
+                padding: "6px 10px",
+              }}
             >
-              Reset
+              RESET
             </Button>
           </Grid>
         </Grid>

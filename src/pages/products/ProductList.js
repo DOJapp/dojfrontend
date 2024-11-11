@@ -45,6 +45,18 @@ const ProductList = () => {
     setSelectedImage(null);
   };
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   const displayTable = () => (
     <Paper elevation={3} style={{ padding: "10px", borderRadius: "8px" }}>
       <MaterialTable
@@ -52,6 +64,7 @@ const ProductList = () => {
         data={productsData.map((product, index) => ({
           ...product,
           serial: index + 1,
+          formattedDate: formatDate(product.createdAt),
         }))}
         columns={[
           { title: "S.No", field: "serial" },
@@ -87,6 +100,7 @@ const ProductList = () => {
             title: "Admin",
             render: (rowData) => rowData.adminId?.name || "N/A",
           },
+          { title: "Created Date", field: "formattedDate" },
           {
             title: "Action",
             render: (rowData) => (
