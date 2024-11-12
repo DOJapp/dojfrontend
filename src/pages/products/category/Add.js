@@ -112,7 +112,7 @@ const AddCategory = () => {
     formData.append("image", category.image);
 
     try {
-      await dispatch(createCategory(formData)); // Dispatch action to create category
+      await dispatch(createCategory(formData));
     } catch (error) {
       setSnackbarMessage("Failed to add category.");
       setIsError(true);
@@ -123,6 +123,12 @@ const AddCategory = () => {
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
   };
+
+  const handleResetCategory = () => {
+    setCategory({ title: "", status: "", image: null })
+    setImagePreview(null);
+    setOpenImagePreview(null);
+  }
 
   return (
     <Paper sx={{ padding: 3 }}>
@@ -188,20 +194,20 @@ const AddCategory = () => {
         <Grid item xs={12} sm={6} container spacing={2} alignItems="center">
           <Grid item xs={8}>
             <Button
-             fullWidth 
-             required
-             variant="outlined"
-             component="label"
-             style={{
-               display: "flex",
-               justifyContent: "center",
-               alignItems: "center",
-               padding: "6px 10px",
-               fontWeight: "bold",
-               borderRadius: 8,
-               background: "#1976d2",
-               color: "#fff",
-             }}
+              fullWidth
+              required
+              variant="outlined"
+              component="label"
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                padding: "6px 10px",
+                fontWeight: "bold",
+                borderRadius: 8,
+                background: "#1976d2",
+                color: "#fff",
+              }}
             >
               Upload Image
               <input
@@ -247,13 +253,15 @@ const AddCategory = () => {
 
           <Grid item>
             <Button
-              onClick={() => setCategory({ title: "", status: "", image: null })}
+              onClick={handleResetCategory}
               variant="contained"
               color="secondary"
               style={{
                 textTransform: "none",
                 borderRadius: 5,
                 padding: "6px 10px",
+                color: "#fff",
+                background: "#dc004e"
               }}
             >
               RESET

@@ -127,13 +127,22 @@ const Add = () => {
               variant="contained"
               color="primary"
               startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+
             >
               {loading ? "Loading..." : "Submit"}
             </Button>
           </Grid>
 
           <Grid item>
-            <Button onClick={handleReset} variant="contained" color="secondary">
+            <Button onClick={handleReset} variant="contained" color="secondary"
+              style={{
+                textTransform: "none",
+                borderRadius: 5,
+                padding: "6px 10px",
+                color: "#fff",
+                background: "#dc004e"
+              }}
+            >
               Reset
             </Button>
           </Grid>

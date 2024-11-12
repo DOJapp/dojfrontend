@@ -257,10 +257,10 @@ const EditCategory = () => {
               variant="contained"
               color="secondary"
               style={{
-                textTransform: "none",
                 borderRadius: 5,
                 padding: "6px 10px",
-                color: "secondary"
+                color: "#fff",
+                background: "#dc004e"
               }}
             >
               RESET

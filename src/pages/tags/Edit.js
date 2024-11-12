@@ -83,7 +83,7 @@ const EditTags = () => {
 
   return (
     <Paper elevation={3} style={{ padding: "20px" }}>
-     <div
+      <div
         style={{
           display: "flex",
           justifyContent: "space-between",
@@ -152,6 +152,13 @@ const EditTags = () => {
               variant="contained"
               color="secondary"
               onClick={handleReset}
+              style={{
+                textTransform: "none",
+                borderRadius: 5,
+                padding: "6px 10px",
+                color: "#fff",
+                background: "#dc004e"
+              }}
             >
               Reset
             </Button>
