@@ -27,7 +27,7 @@ const ProductList = () => {
     // Redirect to the edit page with the product ID
     navigate(`/products/edit/${rowData._id}`);
   };
-
+  
   const handleDelete = (rowData) => {
     // Dispatch delete action
     dispatch(deleteProduct(rowData._id));

@@ -264,10 +264,10 @@ const Edit = () => {
               variant="contained"
               color="secondary"
               style={{
-                textTransform: "none",
-                fontWeight: "bold",
-                borderRadius: 8,
-                padding: "8px 16px",
+                borderRadius: 5,
+                padding: "6px 16px",
+                color: "#fff",
+                background: "#dc004e"
               }}
             >
               RESET

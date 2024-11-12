@@ -153,14 +153,13 @@ const EditTags = () => {
               color="secondary"
               onClick={handleReset}
               style={{
-                textTransform: "none",
                 borderRadius: 5,
-                padding: "6px 10px",
+                padding: "6px 16px",
                 color: "#fff",
                 background: "#dc004e"
               }}
             >
-              Reset
+              RESET
             </Button>
           </Grid>
         </Grid>

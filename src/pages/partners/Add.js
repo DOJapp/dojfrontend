@@ -220,27 +220,96 @@ const AddPartner = () => {
     setCompanyDetails({ ...companyDetails, firmType: event.target.value });
   };
 
-  // Handle input changes
+  const formatPanNumber = (value) => {
+    let formattedValue = value.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+    if (formattedValue.length <= 5) {
+      return formattedValue.replace(/[^A-Za-z]/g, '');
+    }
+    if (formattedValue.length <= 9) {
+      return formattedValue.slice(0, 5) + formattedValue.slice(5).replace(/[^0-9]/g, '');
+    }
+    return formattedValue.slice(0, 5) + formattedValue.slice(5, 9).replace(/[^0-9]/g, '') + formattedValue.slice(9, 10).replace(/[^A-Za-z]/g, '');
+  };
+
+  const formatGstNumber = (value) => {
+    let formattedValue = value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+
+    if (formattedValue.length <= 2) return formattedValue.replace(/[^0-9]/g, '');
+    if (formattedValue.length <= 7) return formattedValue.slice(0, 2) + formattedValue.slice(2).replace(/[^A-Za-z]/g, '');
+    if (formattedValue.length <= 11) return formattedValue.slice(0, 7) + formattedValue.slice(7).replace(/[^0-9]/g, '');
+    if (formattedValue.length <= 12) return formattedValue.slice(0, 11) + formattedValue.slice(11).replace(/[^A-Za-z]/g, '');
+    if (formattedValue.length <= 13) return formattedValue.slice(0, 12) + formattedValue.slice(12).replace(/[^1-9A-Za-z]/g, '');
+    return formattedValue.slice(0, 14) + formattedValue.slice(14, 15);
+  };
+
+
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     let updatedValue = value;
-    if (name === "panNumber" || name === "gstNumber") {
-      updatedValue = value.toUpperCase();
-    }
+    let validationError = '';
 
-    if (name === "aadharNumber" && !/^\d*$/.test(value)) {
-      return;
-    }
-
-    if (name === "aadharNumber") {
-      if (!/^\d*$/.test(value)) {
-        return;
+    if (name === "panNumber") {
+      updatedValue = formatPanNumber(value);
+      if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(updatedValue)) {
+        validationError = "Invalid PAN Number format.";
       }
+    } else if (name === "aadharNumber") {
+      if (!/^\d{12}$/.test(value)) {
+        validationError = "Aadhar Number must be exactly 12 digits.";
+      }
+    } else if (name === "gstNumber") {
+      updatedValue = formatGstNumber(value);
+      if (!/^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/.test(updatedValue)) {
+        validationError = "Invalid GST Number format. ex: 22ABCDE1234F1Z5";
+      }
+    } else if (name === "cinNumber") {
+      updatedValue = value.replace(/[^A-Za-z0-9]/g, '').toUpperCase()
     }
+
     setCompanyDetails((prevDetails) => ({ ...prevDetails, [name]: updatedValue }));
+    setError((prevError) => ({ ...prevError, [name]: validationError }));
   };
 
-  // Handle file changes
+  const handleKeyDown = (e, fieldName) => {
+    const allowedKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"];
+    if (fieldName === "panNumber" && !/[A-Za-z0-9]/.test(e.key) && !allowedKeys.includes(e.key)) {
+      e.preventDefault();
+    } else if (fieldName === "aadharNumber" && !/[0-9]/.test(e.key) && !allowedKeys.includes(e.key)) {
+      e.preventDefault();
+    } else if (fieldName === "percentage") {
+      if (!/[0-9]/.test(e.key) && !allowedKeys.includes(e.key)) {
+        e.preventDefault();
+      }
+      const inputValue = e.target.value + e.key;
+      if (parseInt(inputValue, 10) > 100) {
+        e.preventDefault();
+      }
+    }
+  };
+
+  const handelDocumentChange = (e) => {
+    const files = Array.from(e.target.files);
+    const base64Images = [];
+
+    files.forEach((file) => {
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        const base64String = reader.result;
+        base64Images.push(base64String);
+
+        setCompanyDetails((prevDetails) => ({
+          ...prevDetails,
+          documentImages: base64Images,
+        }));
+      };
+
+      reader.readAsDataURL(file);
+    });
+  };
+
+
+
   const handleFileChange = (event, name, index, isText = false) => {
     const value = isText ? event.target.value : event.target.files[0];
 
@@ -250,9 +319,9 @@ const AddPartner = () => {
         setCompanyDetails((prevDetails) => {
           const updatedPartners = [...prevDetails.partners];
           if (index !== undefined) {
-            updatedPartners[index][name] = reader.result; // Update partner's image
+            updatedPartners[index][name] = reader.result;
           } else {
-            prevDetails[name] = reader.result; // Update company image
+            prevDetails[name] = reader.result;
           }
           return { ...prevDetails, partners: updatedPartners };
         });
@@ -262,9 +331,9 @@ const AddPartner = () => {
       setCompanyDetails((prevDetails) => {
         const updatedPartners = [...prevDetails.partners];
         if (index !== undefined) {
-          updatedPartners[index][name] = value; // Update partner's text field
+          updatedPartners[index][name] = value;
         } else {
-          prevDetails[name] = value; // Update company text field
+          prevDetails[name] = value;
         }
         return { ...prevDetails, partners: updatedPartners };
       });
@@ -279,15 +348,9 @@ const AddPartner = () => {
       [name]: value,
     }));
   };
-  // Handle form submission
+
   const handleSubmit = async () => {
 
-    // const validationErrors = validateForm();
-    // if (Object.keys(validationErrors).length > 0) {
-    //   setError(validationErrors);
-    //   return;
-    // }
-    console.log("ctesf", error);
     let formData;
     if (companyDetails.gstSelected === "No") {
       formData = {
@@ -331,8 +394,7 @@ const AddPartner = () => {
         partners: companyDetails.partners,
       };
     }
-    // Send formData to API
-    console.log(formData);
+
     dispatch(createPartner(formData));
   };
 
@@ -365,64 +427,6 @@ const AddPartner = () => {
   };
 
 
-  const validateForm = () => {
-    const errors = {};
-    if (!companyDetails.firmName) {
-      errors.firmName = "Firm Name is required.";
-    }
-
-    if (!companyDetails.firmAddress) {
-      errors.firmAddress = "Firm Name is required.";
-    }
-
-    if (!companyDetails.panNumber) {
-      errors.panNumber = "PAN Number is required.";
-    } else if (companyDetails.panNumber.length !== 10) {
-      errors.panNumber = "PAN Number must be exactly 10 characters.";
-    } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(companyDetails.panNumber)) {
-      errors.panNumber = "Invalid PAN Number format.";
-    }
-
-    if (!companyDetails.panImage) {
-      errors.panImage = "PAN Image is required.";
-    }
-
-    if (!companyDetails.aadharNumber) {
-      errors.aadharNumber = "Aadhar Number is required.";
-    } else if (companyDetails.aadharNumber.length !== 12) {
-      errors.aadharNumber = "Aadhar Number must be exactly 12 digits.";
-    } else if (!/^\d{12}$/.test(companyDetails.aadharNumber)) {
-      errors.aadharNumber = "Invalid Aadhar Number format. It must be a 12-digit number.";
-    }
-
-    if (!companyDetails.aadharFrontImage) {
-      errors.aadharFrontImage = "aadhar Front Image is required.";
-    }
-    if (!companyDetails.aadharBackImage) {
-      errors.aadharBackImage = "aadhar Back Image is required.";
-    }
-
-    if (!companyDetails.bankName) {
-      errors.bankName = "Bank Name is required.";
-    }
-    if (!companyDetails.accountNumber) {
-      errors.accountNumber = "Account Number is required.";
-    }
-
-    if (companyDetails.gstSelected === "Yes") {
-      if (!companyDetails.gstNumber) {
-        errors.gstNumber = "GST Number is required.";
-      } else if (!/^\d{2}[A-Z]{5}\d{4}[A-Z]{1}\d{1}[Z]{1}[A-Z\d]{1}$/.test(companyDetails.gstNumber)) {
-        errors.gstNumber = "Invalid GST Number format.";
-      }
-
-
-    }
-    return errors;
-  };
-
-
-
   // Handle remove partner
   const handleRemovePartner = (index) => {
     setCompanyDetails((prevDetails) => {
@@ -437,7 +441,7 @@ const AddPartner = () => {
 
       <Grid item xs={12}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
-          <Typography variant="h6">Display Partner</Typography>
+          <Typography variant="h6">Add Partner</Typography>
           <Button
             variant="contained"
             color="primary"
@@ -450,7 +454,7 @@ const AddPartner = () => {
               padding: "8px 16px",
             }}
           >
-            Add Partner
+            Display Partner
           </Button>
         </div>
       </Grid>
@@ -471,7 +475,7 @@ const AddPartner = () => {
 
         {companyDetails.gstSelected === "No" && (
           <>
-            <Grid item xs={12}>
+            <Grid item xs={12} mt={2}>
               <Typography variant="h6">Firm Details</Typography>
             </Grid>
             <Grid item xs={12} md={6}>
@@ -483,6 +487,7 @@ const AddPartner = () => {
                 name="panNumber"
                 value={companyDetails.panNumber || ""}
                 onChange={handleInputChange}
+                onKeyDown={(e) => handleKeyDown(e, "panNumber")}
                 error={!!error.panNumber}
                 helperText={error.panNumber}
                 inputProps={{ maxLength: 10 }}
@@ -523,7 +528,7 @@ const AddPartner = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <Typography variant="h6">Firm Details</Typography>
+              <Typography variant="h6">Owner Details</Typography>
             </Grid>
             <Grid item xs={12} md={6}>
               <TextField
@@ -534,6 +539,7 @@ const AddPartner = () => {
                 name="aadharNumber"
                 value={companyDetails.aadharNumber || ""}
                 onChange={handleInputChange}
+                onKeyDown={(e) => handleKeyDown(e, "aadharNumber")}
                 error={!!error.aadharNumber}
                 helperText={error.aadharNumber}
                 inputProps={{ maxLength: 12 }}
@@ -565,16 +571,7 @@ const AddPartner = () => {
                     hidden
                     accept="image/*,.pdf,.doc,.docx"
                     multiple
-                    onChange={(e) => {
-                      const files = Array.from(e.target.files);
-                      const previews = files.map((file) =>
-                        URL.createObjectURL(file)
-                      );
-                      setCompanyDetails((prevDetails) => ({
-                        ...prevDetails,
-                        documentImages: previews,
-                      }));
-                    }}
+                    onChange={handelDocumentChange}
                   />
                 </Button>
               </Grid>
@@ -609,8 +606,6 @@ const AddPartner = () => {
               error={!!error.aadharBackImage}
               helperText={error.aadharBackImage}
             />
-
-
 
             <BankDetails
               partner={companyDetails}
@@ -715,6 +710,7 @@ const AddPartner = () => {
                 required
                 fullWidth
                 name="percentage"
+                onKeyDown={(e) => handleKeyDown(e, "percentage")}
                 value={companyDetails.percentage || ""}
                 onChange={handleInputChange}
               />
@@ -820,7 +816,7 @@ const AddPartner = () => {
               </Grid>
             )}
             <Grid item xs={12} md={6} container spacing={2}>
-              <Grid item xs={8}>
+              <Grid item xs={12}>
                 <Button
                   variant="contained"
                   component="label"
@@ -833,33 +829,30 @@ const AddPartner = () => {
                     hidden
                     accept="image/*"
                     multiple
-                    onChange={(e) => {
-                      const files = Array.from(e.target.files);
-                      const previews = files.map((file) =>
-                        URL.createObjectURL(file)
-                      );
-                      setCompanyDetails((prevDetails) => ({
-                        ...prevDetails,
-                        documentImages: previews,
-                      }));
-                    }}
+                    onChange={handelDocumentChange}
                   />
                 </Button>
               </Grid>
-              <Grid item xs={4}>
-                <Avatar
-                  alt="Upload Document Preview"
-                  src={
-                    companyDetails.documentImages &&
-                    companyDetails.documentImages[0]
-                  }
-                  style={{
-                    width: "50px",
-                    height: "50px",
-                    marginLeft: "10px",
-                    marginTop: "10px",
-                  }}
-                />
+
+              <Grid item xs={12}>
+                <Grid container spacing={2}>
+                  {companyDetails.documentImages && companyDetails.documentImages.length > 0 && (
+                    companyDetails.documentImages.map((image, index) => (
+                      <Grid item xs={2} key={index}>
+                        <Avatar
+                          alt={`Document Preview ${index + 1}`}
+                          src={image}
+                          style={{
+                            width: "60px",
+                            height: "60px",
+                            marginLeft: "10px",
+                            marginTop: "10px",
+                          }}
+                        />
+                      </Grid>
+                    ))
+                  )}
+                </Grid>
               </Grid>
             </Grid>
             <BankDetails
@@ -913,8 +906,9 @@ const AddPartner = () => {
               color: "#fff",
               background: "#1976d2"
             }}
+            startIcon={partnerState.loading && <CircularProgress size={20} sx={{ color: "white" }} />}
           >
-            {partnerState.loading ? <CircularProgress size={24} /> : "Submit"}
+            {partnerState.loading ? "Loading..." : "Submit"}
           </Button>
         </Grid>
       </Grid>

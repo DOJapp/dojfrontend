@@ -133,7 +133,7 @@ const Add = () => {
               value={redirectTo}
               onChange={(e) => {
                 setRedirectTo(e.target.value);
-                setUrl("");  // Reset URL when page type changes
+                setUrl("");
                 handleError("redirectTo", null);
               }}
             >
@@ -209,7 +209,7 @@ const Add = () => {
               padding: "6px 10px",
               fontWeight: "bold",
               borderRadius: 8,
-              background:"#1976d2",
+              background: "#1976d2",
               color: "#fff",
             }}
           >
@@ -255,12 +255,13 @@ const Add = () => {
               variant="contained"
               color="secondary"
               style={{
-                textTransform: "none",
                 borderRadius: 5,
-                padding: "6px 10px",
+                padding: "6px 16px",
+                color: "#fff",
+                background: "#dc004e"
               }}
             >
-              Reset
+              RESET
             </Button>
           </Grid>
         </Grid>

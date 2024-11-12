@@ -56,7 +56,7 @@ const EditProduct = () => {
   useEffect(() => {
     dispatch(getCategories());
     if (id) {
-      dispatch(getProductById(id)); 
+      dispatch(getProductById(id));
     }
   }, [dispatch, id]);
 
@@ -314,7 +314,7 @@ const EditProduct = () => {
             Upload Image
             <input
               type="file"
-             
+
               hidden
               name="image"
               accept="image/*"
@@ -418,6 +418,8 @@ const EditProduct = () => {
                 textTransform: "none",
                 borderRadius: 5,
                 padding: "6px 10px",
+                color: "#fff",
+                background: "#dc004e"
               }}
             >
               RESET

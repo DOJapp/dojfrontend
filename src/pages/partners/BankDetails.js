@@ -8,7 +8,7 @@ import {
 // Bank details component
 const BankDetails = ({ partner, handleBankDetailsChange }) => (
   <>
-  
+
     <Grid item xs={12}>
       <Typography variant="h6">Bank Details</Typography>
     </Grid>

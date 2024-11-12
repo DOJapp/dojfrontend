@@ -127,6 +127,7 @@ function* createPartnerSaga(action) {
     const response = yield call(ApiRequest.postRequest, {
       url: `${api_url}${partners}`,
       data: payload,
+      header: 'json'
     });
 
     if (response?.success) {

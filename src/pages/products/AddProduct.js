@@ -367,7 +367,7 @@ const AddProduct = () => {
         </Grid>
 
         <Grid item xs={12}>
-          <Typography variant="body1" gutterBottom>Description</Typography>
+          <Typography variant="body1" gutterBottom style={{ marginLeft: "5px" }}>Description</Typography>
           <ReactQuill
             value={product.description}
             onChange={(value) => setProduct((prev) => ({ ...prev, description: value }))}
@@ -400,6 +400,8 @@ const AddProduct = () => {
                 textTransform: "none",
                 borderRadius: 5,
                 padding: "6px 10px",
+                color: "#fff",
+                background: "#dc004e"
               }}
             >
               RESET
@@ -411,7 +413,7 @@ const AddProduct = () => {
       <Dialog open={openImagePreview} onClose={() => setOpenImagePreview(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Image Preview</DialogTitle>
         <DialogContent>
-          <img src={imagePreview} alt="Preview" style={{ width: "100%",height:"380px", borderRadius: "8px" }} />
+          <img src={imagePreview} alt="Preview" style={{ width: "100%", height: "380px", borderRadius: "8px" }} />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenImagePreview(false)} color="primary">
@@ -432,7 +434,7 @@ const AddProduct = () => {
               key={index}
               src={image}
               alt={`Gallery Preview ${index}`}
-              style={{ width: "100%",height:"380px", borderRadius: "8px", marginBottom: 10 }}
+              style={{ width: "100%", height: "380px", borderRadius: "8px", marginBottom: 10 }}
             />
           ))}
         </DialogContent>

@@ -25,8 +25,8 @@ const PartnerList = () => {
   };
 
   const handleView = (rowData) => {
-    setSelectedImage(rowData.image || "fallback_image_url");
-    setOpen(true);
+    navigate(`/partners/views/${rowData._id}`);
+
   };
 
   const handleClose = () => {

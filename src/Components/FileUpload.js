@@ -13,8 +13,8 @@ const FileUpload = ({ label, onChange, preview, error, helperText }) => (
         style={{
           padding: "6px 10px",
           color: "#fff",
-          borderRadius:8,
-          background:"#1976d2"
+          borderRadius: 8,
+          background: "#1976d2"
         }}
       >
         {label}
@@ -27,18 +27,20 @@ const FileUpload = ({ label, onChange, preview, error, helperText }) => (
       )}
 
     </Grid>
-    <Grid item xs={3}>
-      <Avatar
-        alt={`${label} Preview`}
-        src={preview}
-        style={{
-          width: "60px",
-          height: "60px",
-          marginLeft: "10px",
-          marginTop: "0px",
-        }}
-      />
-    </Grid>
+    {preview && (
+      <Grid item xs={3}>
+        <Avatar
+          alt={`${label} Preview`}
+          src={preview}
+          style={{
+            width: "60px",
+            height: "60px",
+            marginLeft: "10px",
+            marginTop: "0px",
+          }}
+        />
+      </Grid>
+    )}
   </Grid>
 );
 

@@ -1,18 +1,12 @@
 import React, { useState, useEffect } from "react";
-import {
-  Grid,
-  Paper,
-  Typography,
-  Box,
-  Divider,
-} from "@mui/material";
+import { Grid, Paper, Typography, Box, Divider, Avatar } from "@mui/material";
 import BusinessIcon from "@mui/icons-material/Business";
 import DescriptionIcon from "@mui/icons-material/Description";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
-import ImageIcon from "@mui/icons-material/Image"; // For rendering image fields
+import ImageIcon from "@mui/icons-material/Image";
 
 const FirmDetails = ({ partner }) => {
   const [companyDetails, setCompanyDetails] = useState({
@@ -25,6 +19,7 @@ const FirmDetails = ({ partner }) => {
     aadharBackImage: null,
     firmType: "N/A",
     cinNumber: "N/A",
+    documents: [] // Initialize documents as an array
   });
 
   useEffect(() => {
@@ -39,6 +34,7 @@ const FirmDetails = ({ partner }) => {
         aadharBackImage: partner.aadharBackImage || null,
         firmType: partner.firmType || "N/A",
         cinNumber: partner.cinNumber || "N/A",
+        documents: partner.documents || [] // Set documents array
       });
     }
   }, [partner]);
@@ -67,12 +63,14 @@ const FirmDetails = ({ partner }) => {
           <Typography variant="subtitle2" color="textSecondary">
             {label}
           </Typography>
-          {value ? (
-            <a href={value} target="_blank" rel="noopener noreferrer">
-              <Typography variant="body1" style={{ fontWeight: 500, fontSize: 16, color: "#1976d2" }}>
-                View Image
-              </Typography>
-            </a>
+          {Array.isArray(value) && value.length > 0 ? (
+            value.map((doc, index) => (
+              <a href={doc} target="_blank" rel="noopener noreferrer" key={index} style={{ display: "block", color: "#1976d2" }}>
+                <Typography variant="body1" style={{ fontWeight: 500, fontSize: 16 }}>
+                  View Document {index + 1}
+                </Typography>
+              </a>
+            ))
           ) : (
             <Typography variant="body1" style={{ fontWeight: 500, fontSize: 16 }}>
               N/A
@@ -98,10 +96,11 @@ const FirmDetails = ({ partner }) => {
         {renderField("Firm Name", companyDetails.firmName, BusinessIcon)}
         {renderField("Firm Address", companyDetails.firmAddress, LocationOnIcon)}
         {renderField("Firm Type", companyDetails.firmType, AccountBalanceIcon)}
-        {renderImageField("PAN Image", companyDetails.panImage)}
-        {companyDetails.firmType != "Proprietor" && companyDetails.firmType != "Partnership" && renderField("CIN Number", companyDetails.cinNumber, DescriptionIcon)}
-        {companyDetails.firmType === "Proprietor" && renderImageField("Aadhar Front Image", companyDetails.aadharFrontImage)}
-        {companyDetails.firmType === "Proprietor" && renderImageField("Aadhar Back Image", companyDetails.aadharBackImage)}
+        {renderImageField("PAN Image", [companyDetails.panImage])}
+        {companyDetails.firmType !== "Proprietor" && companyDetails.firmType !== "Partnership" && renderField("CIN Number", companyDetails.cinNumber, DescriptionIcon)}
+        {companyDetails.firmType === "Proprietor" && renderImageField("Aadhar Front Image", [companyDetails.aadharFrontImage])}
+        {companyDetails.firmType === "Proprietor" && renderImageField("Aadhar Back Image", [companyDetails.aadharBackImage])}
+        {renderImageField("Documents", companyDetails.documents)}
       </Grid>
     </Paper>
   );
