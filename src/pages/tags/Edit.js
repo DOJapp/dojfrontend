@@ -9,7 +9,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  CircularProgress
+  CircularProgress,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { getTagById, updateTag } from "../../redux/Actions/tagsActions";
@@ -27,9 +27,12 @@ const EditTags = () => {
   const [status, setStatus] = useState("Active");
   const [errors, setErrors] = useState({ title: "" });
 
-  const { success, error: bannerError, loading, selectedTag } = useSelector(
-    (state) => state.tag
-  );
+  const {
+    success,
+    error: bannerError,
+    loading,
+    selectedTag,
+  } = useSelector((state) => state.tag);
 
   useEffect(() => {
     if (id) {
@@ -46,7 +49,7 @@ const EditTags = () => {
 
   useEffect(() => {
     if (success) {
-      Swal.fire("Success!", "Tag updated successfully.", "success");
+      Swal.fire("Success!", "Tag updated successfully", "success");
       navigate("/tags");
     } else if (bannerError) {
       Swal.fire("Error!", bannerError, "error");
@@ -73,8 +76,6 @@ const EditTags = () => {
   };
 
   const handleSubmit = () => {
-    setErrors({ title: "" });
-
     if (!validate()) return;
 
     const tagsData = { title, status };
@@ -98,12 +99,6 @@ const EditTags = () => {
           color="primary"
           onClick={() => navigate("/tags")}
           startIcon={<DvrIcon />}
-          style={{
-            textTransform: "none",
-            fontWeight: "bold",
-            borderRadius: 8,
-            padding: "8px 16px",
-          }}
         >
           Display Tags
         </Button>
@@ -142,23 +137,15 @@ const EditTags = () => {
               color="primary"
               onClick={handleSubmit}
               disabled={loading}
-              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+              startIcon={
+                loading ? <CircularProgress size={20} color="inherit" /> : null
+              }
             >
               {loading ? "Updating..." : "Update"}
             </Button>
           </Grid>
           <Grid item>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={handleReset}
-              style={{
-                borderRadius: 5,
-                padding: "6px 16px",
-                color: "#fff",
-                background: "#dc004e"
-              }}
-            >
+            <Button variant="contained" color="secondary" onClick={handleReset}>
               RESET
             </Button>
           </Grid>

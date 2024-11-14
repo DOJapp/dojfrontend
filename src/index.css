@@ -50,17 +50,3 @@ a {
   height: 0%;
   width: 0%;
 }
-
-.MuiMenu-list {
-  outline: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding-top: 6px;
-  padding-bottom: 6px;
-  box-sizing: border-box;
-  white-space: nowrap;
-  padding-left: 16px;
-  padding-right: 16px;
-  gap: 10px;
-}

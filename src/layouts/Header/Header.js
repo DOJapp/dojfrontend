@@ -11,7 +11,7 @@ import * as Actions from '../../redux/Actions/dashboardActions';
 const Header = ({ dispatch, isSidebarOpen }) => {
   const [userToggle, setUserToggle] = useState(false); // You can use this state for user menu toggle
   const navigate = useNavigate();
-  const [data, setData] = useState(null); // Initialize with null
+  const [data, setData] = useState(null); 
 
   useEffect(() => {
     // Fetch user data (here assumed to be tokens) from local storage

@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useStyles } from '../../assets/styles.js';
-import { Grid, TextField } from "@mui/material";
+import { Grid, TextField, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper } from "@mui/material";
 import { AddCircleRounded, CloseRounded } from '@mui/icons-material';
-import MaterialTable from "material-table";
 import { get_all_users } from "../../utils/Constants.js"; // Ensure this endpoint returns user data
 import { getData } from '../../utils/FetchNodeServices.js';
 import { useNavigate } from "react-router-dom";
@@ -43,42 +42,32 @@ const ListUsers = () => {
     const displayTable = () => (
         <Grid container spacing={1}>
             <Grid item lg={12}>
-                <MaterialTable
-                    title="Users"
-                    data={usersData}
-                    columns={[
-                        { title: 'S.No', render: (rowData, index) => index + 1 },
-                        { title: 'Name', field: 'name' },
-                        { title: 'Email', field: 'email' },
-                        { title: 'Phone', field: 'phone' },
-                        {
-                            title: 'Action',
-                            render: (rowData) => (
-                                <button onClick={() => handleOpen(rowData)}>Edit</button>
-                            ),
-                        },
-                    ]}
-                    options={{
-                        sorting: true,
-                        search: true,
-                        paging: true,
-                        pageSize: 5,
-                        actionsColumnIndex: -1,
-                    }}
-                    actions={[
-                        {
-                            icon: () => (
-                                <div className={classes.addButton}>
-                                    <AddCircleRounded />
-                                    <div className={classes.addButtontext}>Add New</div>
-                                </div>
-                            ),
-                            tooltip: 'Add User',
-                            isFreeAction: true,
-                            onClick: () => navigate("/AddUser"),
-                        },
-                    ]}
-                />
+                <TableContainer component={Paper}>
+                    <Table aria-label="user table">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>S.No</TableCell>
+                                <TableCell>Name</TableCell>
+                                <TableCell>Email</TableCell>
+                                <TableCell>Phone</TableCell>
+                                <TableCell>Action</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {usersData.map((user, index) => (
+                                <TableRow key={user._id}>
+                                    <TableCell>{index + 1}</TableCell>
+                                    <TableCell>{user.name}</TableCell>
+                                    <TableCell>{user.email}</TableCell>
+                                    <TableCell>{user.phone}</TableCell>
+                                    <TableCell>
+                                        <button onClick={() => handleOpen(user)}>Edit</button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
             </Grid>
         </Grid>
     );

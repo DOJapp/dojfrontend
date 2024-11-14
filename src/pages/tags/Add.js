@@ -10,6 +10,7 @@ import {
   Paper,
   Typography,
   CircularProgress,
+  Box,
 } from "@mui/material";
 import List from "@mui/icons-material/List";
 import { useNavigate } from "react-router-dom";
@@ -25,11 +26,14 @@ const Add = () => {
   const [status, setStatus] = useState("Active");
   const [error, setError] = useState("");
 
-  const { success, error: bannerError, loading } = useSelector((state) => state.tag);
+  const {
+    success,
+    error: bannerError,
+    loading,
+  } = useSelector((state) => state.tag);
 
   useEffect(() => {
     if (success) {
-      Swal.fire("Success!", "Tag added successfully.", "success");
       navigate("/tags");
     } else if (bannerError) {
       Swal.fire("Error!", bannerError, "error");
@@ -40,7 +44,7 @@ const Add = () => {
     if (!value) {
       setError("Title is required");
     } else {
-      setError("");
+      setError(""); // Clear error if title is valid
     }
     setTitle(value);
   };
@@ -48,17 +52,20 @@ const Add = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    // Check if title is valid before dispatching action
     if (!title) {
       setError("Title is required");
+      return; // Prevent form submission if title is invalid
     }
 
+    // Proceed if no error
     if (!error && title) {
       const tagData = { title, status };
       dispatch(createTag(tagData));
     }
   };
 
-  // Reset form
+  // Reset form fields
   const handleReset = () => {
     setTitle("");
     setStatus("Active");
@@ -66,31 +73,19 @@ const Add = () => {
   };
 
   return (
-    <Paper style={{ padding: "20px", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }}>
+    <Paper elevation={3} style={{ padding: 16 }}>
       <Grid item xs={12}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: 20,
-          }}
-        >
+        <Box display="flex" justifyContent="space-between" mb={2}>
           <Typography variant="h6">Add Tag</Typography>
           <Button
             variant="contained"
             color="primary"
             onClick={() => navigate("/tags")}
             startIcon={<List />}
-            style={{
-              textTransform: "none",
-              fontWeight: "bold",
-              borderRadius: 8,
-              padding: "8px 16px",
-            }}
           >
             Display Tags
           </Button>
-        </div>
+        </Box>
       </Grid>
       <Grid container spacing={2} component="form" onSubmit={handleSubmit}>
         <Grid item xs={12} md={6}>
@@ -102,11 +97,12 @@ const Add = () => {
             fullWidth
             error={!!error}
             helperText={error}
+            required
           />
         </Grid>
 
         <Grid item xs={12} md={6}>
-          <FormControl fullWidth variant="outlined" required>
+          <FormControl fullWidth variant="outlined">
             <InputLabel>Status</InputLabel>
             <Select
               label="Status"
@@ -122,27 +118,20 @@ const Add = () => {
         <Grid item xs={12} container justifyContent="center" spacing={2}>
           <Grid item>
             <Button
-              onClick={handleSubmit}
-              disabled={loading}
+              type="submit"
               variant="contained"
               color="primary"
-              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
-
+              disabled={loading}
+              startIcon={
+                loading ? <CircularProgress size={20} color="inherit" /> : null
+              }
             >
               {loading ? "Loading..." : "Submit"}
             </Button>
           </Grid>
 
           <Grid item>
-            <Button onClick={handleReset} variant="contained" color="secondary"
-              style={{
-                textTransform: "none",
-                borderRadius: 5,
-                padding: "6px 16px",
-                color: "#fff",
-                background: "#dc004e"
-              }}
-            >
+            <Button variant="contained" color="secondary" onClick={handleReset}>
               RESET
             </Button>
           </Grid>

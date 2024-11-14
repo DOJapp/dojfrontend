@@ -61,7 +61,8 @@ const AddProduct = () => {
     if (!product.categoryId) newErrors.categoryId = "Category is required.";
     if (!product.price) newErrors.price = "Price is required.";
     if (!product.quantity) newErrors.quantity = "Quantity is required.";
-    if (!product.deliveryMode) newErrors.deliveryMode = "Delivery mode is required.";
+    if (!product.deliveryMode)
+      newErrors.deliveryMode = "Delivery mode is required.";
     if (!product.image) newErrors.image = "Image is required.";
 
     if (parseFloat(product.discount) > parseFloat(product.price)) {
@@ -75,7 +76,10 @@ const AddProduct = () => {
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
-    if ((name === "price" || name === "discount" || name === "quantity") && !/^\d*\.?\d*$/.test(value)) {
+    if (
+      (name === "price" || name === "discount" || name === "quantity") &&
+      !/^\d*\.?\d*$/.test(value)
+    ) {
       return;
     }
 
@@ -83,7 +87,9 @@ const AddProduct = () => {
       if (name === "galleryImages") {
         const selectedFiles = Array.from(files);
         setGalleryImages(selectedFiles);
-        setGalleryPreview(selectedFiles.map((file) => URL.createObjectURL(file)));
+        setGalleryPreview(
+          selectedFiles.map((file) => URL.createObjectURL(file))
+        );
       } else {
         const file = files[0];
         setProduct((prev) => ({ ...prev, [name]: file }));
@@ -95,7 +101,6 @@ const AddProduct = () => {
     validate();
   };
 
-
   const handleIcon = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -103,7 +108,6 @@ const AddProduct = () => {
       setImagePreview(URL.createObjectURL(file));
     }
   };
-
 
   const handleSubmit = () => {
     if (!validate()) return;
@@ -160,19 +164,19 @@ const AddProduct = () => {
   return (
     <Paper elevation={3} sx={{ padding: 2 }}>
       <Grid item xs={12}>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: 20,
+          }}
+        >
           <Typography variant="h6">Add Product</Typography>
           <Button
             variant="contained"
             color="primary"
             onClick={() => navigate("/products")}
             startIcon={<List />}
-            style={{
-              textTransform: "none",
-              fontWeight: "bold",
-              borderRadius: 8,
-              padding: "8px 16px",
-            }}
           >
             Display Product
           </Button>
@@ -274,7 +278,11 @@ const AddProduct = () => {
         <Grid item xs={12} md={6}>
           <FormControl fullWidth>
             <InputLabel>Status</InputLabel>
-            <Select label="Status" value={status} onChange={(e) => setStatus(e.target.value)}>
+            <Select
+              label="Status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
               <MenuItem value="Active">Active</MenuItem>
               <MenuItem value="Blocked">Blocked</MenuItem>
             </Select>
@@ -282,29 +290,19 @@ const AddProduct = () => {
         </Grid>
 
         <Grid item xs={12} md={6}>
-          <Button
-            variant="outlined"
-            component="label"
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              padding: "6px 10px",
-              fontWeight: "bold",
-              borderRadius: 8,
-              background: "#1976d2",
-              color: "#fff",
-            }}
-          >
+          <Button variant="outlined" component="label">
             Upload Image
-            <input
-              type="file"
-              hidden
-              accept="image/*"
-              onChange={handleIcon}
-            />
+            <input type="file" hidden accept="image/*" onChange={handleIcon} />
           </Button>
-          {errors.image && <Typography variant="caption" color="error" sx={{ display: "block", mt: 1 }}>{errors.image}</Typography>}
+          {errors.image && (
+            <Typography
+              variant="caption"
+              color="error"
+              sx={{ display: "block", mt: 1 }}
+            >
+              {errors.image}
+            </Typography>
+          )}
           {imagePreview && (
             <Avatar
               src={imagePreview}
@@ -321,20 +319,7 @@ const AddProduct = () => {
           )}
         </Grid>
         <Grid item xs={12} sm={6}>
-          <Button
-            variant="outlined"
-            component="label"
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              padding: "6px 10px",
-              fontWeight: "bold",
-              borderRadius: 8,
-              background: "#1976d2",
-              color: "#fff",
-            }}
-          >
+          <Button variant="outlined" component="label">
             Upload Gallery Images
             <input
               type="file"
@@ -367,13 +352,25 @@ const AddProduct = () => {
         </Grid>
 
         <Grid item xs={12}>
-          <Typography variant="body1" gutterBottom style={{ marginLeft: "5px" }}>Description</Typography>
+          <Typography
+            variant="body1"
+            gutterBottom
+            style={{ marginLeft: "5px" }}
+          >
+            Description
+          </Typography>
           <ReactQuill
             value={product.description}
-            onChange={(value) => setProduct((prev) => ({ ...prev, description: value }))}
+            onChange={(value) =>
+              setProduct((prev) => ({ ...prev, description: value }))
+            }
           />
           {errors.description && (
-            <Typography color="error" variant="caption" sx={{ display: "block", mt: 1 }}>
+            <Typography
+              color="error"
+              variant="caption"
+              sx={{ display: "block", mt: 1 }}
+            >
               {errors.description}
             </Typography>
           )}
@@ -386,34 +383,34 @@ const AddProduct = () => {
               variant="contained"
               color="primary"
               disabled={loading}
-              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+              startIcon={
+                loading ? <CircularProgress size={20} color="inherit" /> : null
+              }
             >
               {loading ? "Loading..." : "Submit"}
             </Button>
           </Grid>
           <Grid item>
-            <Button
-              onClick={handleReset}
-              variant="contained"
-              color="secondary"
-              style={{
-                textTransform: "none",
-                borderRadius: 5,
-                padding: "6px 10px",
-                color: "#fff",
-                background: "#dc004e"
-              }}
-            >
+            <Button onClick={handleReset} variant="contained" color="secondary">
               RESET
             </Button>
           </Grid>
         </Grid>
       </Grid>
 
-      <Dialog open={openImagePreview} onClose={() => setOpenImagePreview(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={openImagePreview}
+        onClose={() => setOpenImagePreview(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Image Preview</DialogTitle>
         <DialogContent>
-          <img src={imagePreview} alt="Preview" style={{ width: "100%", height: "380px", borderRadius: "8px" }} />
+          <img
+            src={imagePreview}
+            alt="Preview"
+            style={{ width: "100%", height: "380px", borderRadius: "8px" }}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenImagePreview(false)} color="primary">
@@ -434,12 +431,20 @@ const AddProduct = () => {
               key={index}
               src={image}
               alt={`Gallery Preview ${index}`}
-              style={{ width: "100%", height: "380px", borderRadius: "8px", marginBottom: 10 }}
+              style={{
+                width: "100%",
+                height: "380px",
+                borderRadius: "8px",
+                marginBottom: 10,
+              }}
             />
           ))}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenGalleryImagePreview(false)} color="primary">
+          <Button
+            onClick={() => setOpenGalleryImagePreview(false)}
+            color="primary"
+          >
             Close
           </Button>
         </DialogActions>

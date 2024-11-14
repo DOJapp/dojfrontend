@@ -182,12 +182,6 @@ const EditProduct = () => {
             color="primary"
             onClick={() => navigate("/products")}
             startIcon={<List />}
-            style={{
-              textTransform: "none",
-              fontWeight: "bold",
-              borderRadius: 8,
-              padding: "8px 16px",
-            }}
           >
             Display Product
           </Button>
@@ -300,16 +294,6 @@ const EditProduct = () => {
           <Button
             variant="outlined"
             component="label"
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              padding: "6px 10px",
-              fontWeight: "bold",
-              borderRadius: 8,
-              background: "#1976d2",
-              color: "#fff",
-            }}
           >
             Upload Image
             <input
@@ -342,16 +326,6 @@ const EditProduct = () => {
           <Button
             variant="outlined"
             component="label"
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              padding: "6px 10px",
-              fontWeight: "bold",
-              borderRadius: 8,
-              background: "#1976d2",
-              color: "#fff",
-            }}
           >
             Upload Gallery Images
             <input
@@ -414,13 +388,6 @@ const EditProduct = () => {
               onClick={handleReset}
               variant="contained"
               color="secondary"
-              style={{
-                textTransform: "none",
-                borderRadius: 5,
-                padding: "6px 10px",
-                color: "#fff",
-                background: "#dc004e"
-              }}
             >
               RESET
             </Button>

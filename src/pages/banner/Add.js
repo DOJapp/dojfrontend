@@ -1,5 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { FormControl, InputLabel, Select, MenuItem, Grid, Avatar, Button, Paper, Typography, Dialog, DialogActions, DialogContent, DialogTitle, CircularProgress } from "@mui/material";
+import {
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Grid,
+  Avatar,
+  Button,
+  Paper,
+  Typography,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  CircularProgress,
+} from "@mui/material";
 import List from "@mui/icons-material/List";
 import { useNavigate } from "react-router-dom";
 import logo_icon from "../../assets/images/logo_icon.png";
@@ -11,11 +26,16 @@ import { getActiveProducts } from "../../redux/Actions/productActions.js";
 const Add = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { success, error: bannerError, loading } = useSelector((state) => state.banner);
 
+  // Redux state
+  const {
+    success,
+    error: bannerError,
+    loading,
+  } = useSelector((state) => state.banner);
   const activeProducts = useSelector((state) => state.product.products || []);
 
-
+  // Local state
   const [redirectTo, setRedirectTo] = useState("");
   const [status, setStatus] = useState("Active");
   const [icon, setIcon] = useState({ file: logo_icon, bytes: "" });
@@ -23,24 +43,28 @@ const Add = () => {
   const [url, setUrl] = useState("");
   const [openImagePreview, setOpenImagePreview] = useState(false);
 
+  // Fetch active products when the component mounts
   useEffect(() => {
     dispatch(getActiveProducts());
   }, [dispatch]);
 
+  // Handle errors
   const handleError = (input, value) => {
     setError((prev) => ({ ...prev, [input]: value }));
   };
 
+  // Handle icon (image) file selection
   const handleIcon = (e) => {
     if (e.target.files && e.target.files.length > 0) {
       setIcon({
         file: URL.createObjectURL(e.target.files[0]),
         bytes: e.target.files[0],
       });
-      handleError("icon", null);
+      handleError("icon", null); // Clear icon error when user selects an image
     }
   };
 
+  // Form validation
   const validation = () => {
     let isValid = true;
 
@@ -62,18 +86,16 @@ const Add = () => {
     return isValid;
   };
 
-  const handleUpdateResult = () => {
+  // Success and error handling after the banner creation process
+  useEffect(() => {
     if (success) {
       Swal.fire("Success!", "Banner added successfully.", "success");
       navigate("/banner");
+      handleReset(); // Reset form state after success
     } else if (bannerError) {
       Swal.fire("Error!", "Failed to add banner.", "error");
     }
-  };
-
-  useEffect(() => {
-    if (success || bannerError) handleUpdateResult();
-  }, [success, bannerError]);
+  }, [success, bannerError, navigate]);
 
   // Handle form submission
   const handleSubmit = async () => {
@@ -89,10 +111,11 @@ const Add = () => {
         formData.append("restaurantId", url);
       }
 
-      dispatch(createBanner(formData));
+      dispatch(createBanner(formData)); // Dispatch action to create the banner
     }
   };
 
+  // Reset form fields
   const handleReset = () => {
     setIcon({ file: logo_icon, bytes: "" });
     setRedirectTo("");
@@ -102,30 +125,35 @@ const Add = () => {
   };
 
   return (
-    <Paper sx={{ padding: 3, margin: "auto", mt: 4 }}>
+    <Paper sx={{ padding: 2, margin: "auto", mt: 1 }}>
       <Grid item xs={12}>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: 20,
+          }}
+        >
           <Typography variant="h6">Add Banner</Typography>
           <Button
             variant="contained"
             color="primary"
             onClick={() => navigate("/banner")}
             startIcon={<List />}
-            style={{
-              textTransform: "none",
-              fontWeight: "bold",
-              borderRadius: 8,
-              padding: "8px 16px",
-            }}
           >
             Display Banner
           </Button>
         </div>
       </Grid>
-      <Grid container spacing={2}>
 
+      <Grid container spacing={2}>
         <Grid item xs={12} md={6}>
-          <FormControl fullWidth variant="outlined" error={!!error.redirectTo} sx={{ minWidth: 120 }}>
+          <FormControl
+            fullWidth
+            variant="outlined"
+            error={!!error.redirectTo}
+            sx={{ minWidth: 120 }}
+          >
             <InputLabel id="select-label">Select Redirect Page</InputLabel>
             <Select
               label="Select Page"
@@ -140,12 +168,16 @@ const Add = () => {
               <MenuItem value="product">Product</MenuItem>
               <MenuItem value="restaurant">Restaurant</MenuItem>
             </Select>
-            {error.redirectTo && <Typography variant="caption" color="error">{error.redirectTo}</Typography>}
+            {error.redirectTo && (
+              <Typography variant="caption" color="error">
+                {error.redirectTo}
+              </Typography>
+            )}
           </FormControl>
         </Grid>
 
         <Grid item xs={12} md={6}>
-          <FormControl fullWidth variant="outlined" required sx={{ minWidth: 120 }}>
+          <FormControl fullWidth variant="outlined" sx={{ minWidth: 120 }}>
             <InputLabel>Status</InputLabel>
             <Select
               label="Status"
@@ -160,7 +192,12 @@ const Add = () => {
 
         {redirectTo === "product" && (
           <Grid item xs={12} md={6}>
-            <FormControl fullWidth variant="outlined" error={!!error.url} sx={{ minWidth: 120 }}>
+            <FormControl
+              fullWidth
+              variant="outlined"
+              error={!!error.url}
+              sx={{ minWidth: 120 }}
+            >
               <InputLabel id="product-select-label">Select Product</InputLabel>
               <Select
                 label="Select Product"
@@ -174,15 +211,26 @@ const Add = () => {
                   </MenuItem>
                 ))}
               </Select>
-              {error.url && <Typography variant="caption" color="error">{error.url}</Typography>}
+              {error.url && (
+                <Typography variant="caption" color="error">
+                  {error.url}
+                </Typography>
+              )}
             </FormControl>
           </Grid>
         )}
 
         {redirectTo === "restaurant" && (
           <Grid item xs={12} md={6}>
-            <FormControl fullWidth variant="outlined" error={!!error.url} sx={{ minWidth: 120 }}>
-              <InputLabel id="restaurant-select-label">Select Restaurant</InputLabel>
+            <FormControl
+              fullWidth
+              variant="outlined"
+              error={!!error.url}
+              sx={{ minWidth: 120 }}
+            >
+              <InputLabel id="restaurant-select-label">
+                Select Restaurant
+              </InputLabel>
               <Select
                 label="Select Restaurant"
                 labelId="restaurant-select-label"
@@ -193,46 +241,38 @@ const Add = () => {
                 <MenuItem value="restaurant2">Restaurant 2</MenuItem>
                 <MenuItem value="restaurant3">Restaurant 3</MenuItem>
               </Select>
-              {error.url && <Typography variant="caption" color="error">{error.url}</Typography>}
+              {error.url && (
+                <Typography variant="caption" color="error">
+                  {error.url}
+                </Typography>
+              )}
             </FormControl>
           </Grid>
         )}
 
         <Grid item xs={12} md={6}>
-          <Button
-            variant="outlined"
-            component="label"
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              padding: "6px 10px",
-              fontWeight: "bold",
-              borderRadius: 8,
-              background: "#1976d2",
-              color: "#fff",
-            }}
-          >
+          <Button variant="outlined" component="label">
             Upload Picture
-            <input
-              type="file"
-              hidden
-              accept="image/*"
-              onChange={handleIcon}
-            />
+            <input type="file" hidden accept="image/*" onChange={handleIcon} />
           </Button>
-          {error.icon && <Typography variant="caption" color="error" sx={{ display: "block", mt: 1 }}>{error.icon}</Typography>}
+          {error.icon && (
+            <Typography
+              variant="caption"
+              color="error"
+              sx={{ display: "block", mt: 1 }}
+            >
+              {error.icon}
+            </Typography>
+          )}
           <Avatar
             src={icon.file}
-            sx={{
-              width: 120,
-              height: 120,
-              mt: 2,
-              cursor: "pointer",
-              border: "2px solid #ccc",
-              objectFit: "cover",
-            }}
             onClick={() => setOpenImagePreview(true)}
+            sx={{
+              cursor: "pointer",
+              width: 56,
+              height: 56,
+              marginTop: 1,
+            }}
           />
         </Grid>
 
@@ -243,34 +283,35 @@ const Add = () => {
               disabled={loading}
               variant="contained"
               color="primary"
-              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+              startIcon={
+                loading ? <CircularProgress size={20} color="inherit" /> : null
+              }
             >
               {loading ? "Loading..." : "Submit"}
             </Button>
           </Grid>
 
           <Grid item>
-            <Button
-              onClick={handleReset}
-              variant="contained"
-              color="secondary"
-              style={{
-                borderRadius: 5,
-                padding: "6px 16px",
-                color: "#fff",
-                background: "#dc004e"
-              }}
-            >
+            <Button onClick={handleReset} variant="contained" color="secondary">
               RESET
             </Button>
           </Grid>
         </Grid>
       </Grid>
 
-      <Dialog open={openImagePreview} onClose={() => setOpenImagePreview(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={openImagePreview}
+        onClose={() => setOpenImagePreview(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Image Preview</DialogTitle>
         <DialogContent>
-          <img src={icon.file} alt="Preview" style={{ width: "100%", borderRadius: "8px" }} />
+          <img
+            src={icon.file}
+            alt="Preview"
+            style={{ width: "100%", borderRadius: "8px" }}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenImagePreview(false)} color="primary">

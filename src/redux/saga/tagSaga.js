@@ -20,7 +20,7 @@ function* getTagsSaga() {
   try {
     yield put({ type: actionTypes.SET_IS_LOADING, payload: true }); // Set loading state
     const response = yield call(ApiRequest.getRequest, {
-      url: api_url + tags, // Adjust the API endpoint for Tags
+      url: api_url + tags,
     });
 
     if (response?.success) {
@@ -131,7 +131,6 @@ function* deleteTagSaga(action) {
   }
 }
 
-
 function* createTagSaga(action) {
   try {
     yield put({ type: actionTypes.SET_IS_LOADING, payload: true }); // Set loading state
@@ -141,7 +140,7 @@ function* createTagSaga(action) {
     const response = yield call(ApiRequest.postRequest, {
       url: `${api_url}${tags}`, // Adjusted the API endpoint for Tags
       data: payload,
-      header: 'json' // Include the new Tag data
+      header: "json", // Include the new Tag data
     });
     console.log("response", response);
     // Check for response success
@@ -164,7 +163,9 @@ function* createTagSaga(action) {
     }
   } catch (error) {
     // Handle unexpected errors
-    yield put(createTagFailure(error.message || "An unexpected error occurred")); // Handle failure
+    yield put(
+      createTagFailure(error.message || "An unexpected error occurred")
+    ); // Handle failure
     Swal.fire({
       icon: "error",
       title: "Error",
@@ -185,7 +186,7 @@ function* updateTagSaga(action) {
     const response = yield call(ApiRequest.putRequest, {
       url: `${api_url}${tags}/${id}`, // Correctly access id from action.payload
       data: data,
-      header: 'json' // Include the updated Tag data
+      header: "json", // Include the updated Tag data
     });
 
     if (response?.success) {

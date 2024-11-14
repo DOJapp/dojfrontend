@@ -30,9 +30,12 @@ const Edit = () => {
   const [icon, setIcon] = useState({ file: logo_icon, bytes: "" });
   const [error, setError] = useState({});
 
-  const { success, error: bannerError, loading, selectedBanner } = useSelector(
-    (state) => state.banner
-  );
+  const {
+    success,
+    error: bannerError,
+    loading,
+    selectedBanner,
+  } = useSelector((state) => state.banner);
 
   const activeProducts = useSelector((state) => state.product.products || []);
 
@@ -125,7 +128,13 @@ const Edit = () => {
 
   return (
     <Paper elevation={3} sx={{ p: 3, mx: "auto", mt: 4 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 20,
+        }}
+      >
         <Typography variant="h5" gutterBottom>
           Edit Banner
         </Typography>
@@ -134,7 +143,12 @@ const Edit = () => {
           color="primary"
           onClick={() => navigate("/banner")}
           startIcon={<DvrIcon />}
-          style={{ textTransform: "none", fontWeight: "bold", borderRadius: 8, padding: "8px 16px" }}
+          sx={{
+            textTransform: "none",
+            fontWeight: "bold",
+            borderRadius: 2,
+            padding: "8px 16px",
+          }}
         >
           Display Banner
         </Button>
@@ -167,7 +181,11 @@ const Edit = () => {
         <Grid item xs={12} md={6}>
           <FormControl fullWidth>
             <InputLabel>Status</InputLabel>
-            <Select label="Status" value={status} onChange={(e) => setStatus(e.target.value)}>
+            <Select
+              label="Status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
               <MenuItem value="Active">Active</MenuItem>
               <MenuItem value="Blocked">Blocked</MenuItem>
             </Select>
@@ -224,13 +242,13 @@ const Edit = () => {
           <Button
             variant="outlined"
             component="label"
-            style={{
+            sx={{
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
               padding: "6px 10px",
               fontWeight: "bold",
-              borderRadius: 8,
+              borderRadius: 2,
               background: "#1976d2",
               color: "#fff",
             }}
@@ -253,7 +271,9 @@ const Edit = () => {
               disabled={loading}
               variant="contained"
               color="primary"
-              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+              startIcon={
+                loading ? <CircularProgress size={20} color="inherit" /> : null
+              }
             >
               {loading ? "Loading..." : "Update"}
             </Button>
@@ -263,11 +283,11 @@ const Edit = () => {
               onClick={handleReset}
               variant="contained"
               color="secondary"
-              style={{
-                borderRadius: 5,
+              sx={{
+                borderRadius: 2,
                 padding: "6px 16px",
                 color: "#fff",
-                background: "#dc004e"
+                backgroundColor: "#dc004e",
               }}
             >
               RESET

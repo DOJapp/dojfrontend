@@ -1,7 +1,7 @@
 import "./App.css";
 import { HashRouter as Router, Route, Routes } from "react-router-dom";
 
-import ErrorNotification from "./Components/ErrorNotification"; // Import error notification
+import ErrorNotification from "./Components/ErrorNotification"; 
 
 import Dashboard from "./pages/dashboard/Dashboard";
 import PrivateRoute from "./utils/PrivateRoute";

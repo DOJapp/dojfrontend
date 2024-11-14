@@ -125,10 +125,10 @@ const AddCategory = () => {
   };
 
   const handleResetCategory = () => {
-    setCategory({ title: "", status: "", image: null })
+    setCategory({ title: "", status: "", image: null });
     setImagePreview(null);
     setOpenImagePreview(null);
-  }
+  };
 
   return (
     <Paper sx={{ padding: 3 }}>
@@ -146,12 +146,6 @@ const AddCategory = () => {
             color="primary"
             onClick={() => navigate("/category")}
             startIcon={<List />}
-            style={{
-              textTransform: "none",
-              fontWeight: "bold",
-              borderRadius: 8,
-              padding: "8px 16px",
-            }}
           >
             Display Category
           </Button>
@@ -175,7 +169,13 @@ const AddCategory = () => {
         </Grid>
 
         <Grid item xs={12} sm={6}>
-          <FormControl fullWidth required variant="outlined" error={!!statusError} sx={{ mb: 2 }}>
+          <FormControl
+            fullWidth
+            required
+            variant="outlined"
+            error={!!statusError}
+            sx={{ mb: 2 }}
+          >
             <InputLabel>Status</InputLabel>
             <Select
               label="Status"
@@ -187,7 +187,11 @@ const AddCategory = () => {
               <MenuItem value="Active">Active</MenuItem>
               <MenuItem value="Blocked">Blocked</MenuItem>
             </Select>
-            {statusError && <Typography variant="body2" color="error">{statusError}</Typography>}
+            {statusError && (
+              <Typography variant="body2" color="error">
+                {statusError}
+              </Typography>
+            )}
           </FormControl>
         </Grid>
 
@@ -198,16 +202,7 @@ const AddCategory = () => {
               required
               variant="outlined"
               component="label"
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                padding: "6px 10px",
-                fontWeight: "bold",
-                borderRadius: 8,
-                background: "#1976d2",
-                color: "#fff",
-              }}
+             
             >
               Upload Image
               <input
@@ -218,7 +213,11 @@ const AddCategory = () => {
                 onChange={handleChange}
               />
             </Button>
-            {imageError && <Typography variant="body2" color="error">{imageError}</Typography>}
+            {imageError && (
+              <Typography variant="body2" color="error">
+                {imageError}
+              </Typography>
+            )}
           </Grid>
           {imagePreview && (
             <Grid item xs={4}>
@@ -245,7 +244,9 @@ const AddCategory = () => {
               disabled={loading}
               variant="contained"
               color="primary"
-              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+              startIcon={
+                loading ? <CircularProgress size={20} color="inherit" /> : null
+              }
             >
               {loading ? "Loading..." : "Submit"}
             </Button>
@@ -256,13 +257,6 @@ const AddCategory = () => {
               onClick={handleResetCategory}
               variant="contained"
               color="secondary"
-              style={{
-                textTransform: "none",
-                borderRadius: 5,
-                padding: "6px 10px",
-                color: "#fff",
-                background: "#dc004e"
-              }}
             >
               RESET
             </Button>
@@ -276,15 +270,27 @@ const AddCategory = () => {
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Alert onClose={handleCloseSnackbar} severity={isError ? "error" : "success"}>
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={isError ? "error" : "success"}
+        >
           {snackbarMessage}
         </Alert>
       </Snackbar>
 
-      <Dialog open={openImagePreview} onClose={() => setOpenImagePreview(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={openImagePreview}
+        onClose={() => setOpenImagePreview(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Image Preview</DialogTitle>
         <DialogContent>
-          <img src={imagePreview} alt="Preview" style={{ width: "100%", borderRadius: "8px" }} />
+          <img
+            src={imagePreview}
+            alt="Preview"
+            style={{ width: "100%", borderRadius: "8px" }}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenImagePreview(false)} color="primary">

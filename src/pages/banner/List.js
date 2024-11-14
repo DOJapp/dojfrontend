@@ -1,10 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { Grid, IconButton, Chip, Dialog, DialogContent, DialogTitle, Paper, Button } from "@mui/material";
-import MaterialTable from "material-table";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getBanners, deleteBanner } from "../../redux/Actions/bannerActions.js";
 import { AddCircleRounded, Edit, Delete } from "@mui/icons-material";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Box,
+  Typography,
+  Chip,
+  Paper,
+} from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
 
 const BannerList = () => {
   const navigate = useNavigate();
@@ -20,17 +29,6 @@ const BannerList = () => {
     dispatch(getBanners());
   }, [dispatch]);
 
-  const handleEdit = (rowData) => {
-    navigate(`/banner/edit/${rowData._id}`);
-  };
-
-  const handleDelete = (rowData) => {
-    // Confirmation prompt before deleting
-    if (window.confirm(`Are you sure you want to delete banner: ${rowData._id}?`)) {
-      dispatch(deleteBanner(rowData._id));
-    }
-  };
-
   const handleClickOpen = (image) => {
     setSelectedImage(image);
     setOpen(true);
@@ -39,6 +37,14 @@ const BannerList = () => {
   const handleClose = () => {
     setOpen(false);
     setSelectedImage("");
+  };
+
+  const handleEdit = (rowData) => {
+    navigate(`/banner/edit/${rowData.id}`);
+  };
+
+  const handleDelete = (rowData) => {
+    dispatch(deleteBanner(rowData.id));
   };
 
   const formatDate = (dateString) => {
@@ -52,100 +58,100 @@ const BannerList = () => {
     });
   };
 
-  const displayTable = () => (
-    <Paper elevation={3} style={{ padding: "10px", borderRadius: "8px" }}>
-      <MaterialTable
-        title="Banners"
-        data={bannersData.map((banner, index) => ({
-          ...banner,
-          serial: index + 1,
-          formattedDate: formatDate(banner.createdAt),
-        }))}
-        columns={[
-          { title: "S.No", field: "serial" },
-          {
-            title: "Redirect To",
-            render: (rowData) => (rowData.redirectTo ? rowData.redirectTo : "N/A"),
-          },
-          {
-            title: "Product Name",
-            render: (rowData) => {
-              if (rowData.redirectTo === "product" && rowData.productId) {
-                return rowData.productId.name || "N/A";  // Directly access name from productId object
-              }
-              return "N/A";
-            },
-          },
-          {
-            title: "Image",
-            field: "image",
-            render: (rowData) => (
-              <img
-                src={rowData.image || "fallback_image_url"}
-                alt={rowData.title || "No Title"}
-                style={{ width: 50, height: 50, cursor: "pointer" }}
-                onClick={() => handleClickOpen(rowData.image)}
-              />
-            ),
-          },
-          {
-            title: "Status",
-            render: (rowData) =>
-              rowData.status === "Active" ? (
-                <Chip label="Active" size="small" variant="outlined" color="success" />
-              ) : (
-                <Chip label="Blocked" size="small" variant="outlined" color="error" />
-              ),
-          },
-          { title: "Created Date", field: "formattedDate" },
-          {
-            title: "Action",
-            render: (rowData) => (
-              <div>
-                <IconButton onClick={() => handleEdit(rowData)} color="primary" aria-label="edit">
-                  <Edit />
-                </IconButton>
-                <IconButton onClick={() => handleDelete(rowData)} color="secondary" aria-label="delete">
-                  <Delete />
-                </IconButton>
-              </div>
-            ),
-          },
-        ]}
-        options={{
-          sorting: true,
-          search: true,
-          paging: true,
-          pageSize: 5,
-          actionsColumnIndex: -1,
-          emptyRowsWhenPaging: false,
-          debounceInterval: 500,
-        }}
-        actions={[
-          {
-            icon: () => (
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<AddCircleRounded />}
-                onClick={() => navigate("/banner/add")}
-                style={{
-                  textTransform: "none",
-                  fontWeight: "bold",
-                  borderRadius: 8,
-                  padding: "8px 16px",
-                }}
-              >
-                Add New
-              </Button>
-            ),
-            tooltip: "Add Banner",
-            isFreeAction: true,
-          },
-        ]}
-      />
-    </Paper>
-  );
+  const columns = [
+    {
+      field: "serial",
+      headerName: "S.No",
+      width: 50,
+      sortable: true,
+    },
+    {
+      field: "redirectTo",
+      headerName: "Redirect To",
+      width: 90,
+      sortable: true,
+    },
+    {
+      field: "productName",
+      headerName: "Product Name",
+      width: 180,
+      sortable: true,
+    },
+    {
+      field: "image",
+      headerName: "Image",
+      width: 90,
+      renderCell: (params) => (
+        <img
+          src={params.value || "fallback_image_url"}
+          alt="Banner"
+          style={{ width: 50, height: 50, cursor: "pointer" }}
+          onClick={() => handleClickOpen(params.value)}
+        />
+      ),
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      width: 130,
+      renderCell: (params) => (
+        <Chip
+          label={params.value === "Active" ? "Active" : "Blocked"}
+          size="small"
+          variant="outlined"
+          color={params.value === "Active" ? "success" : "error"}
+        />
+      ),
+    },
+    {
+      field: "createdAt",
+      headerName: "Created Date",
+      width: 180,
+      sortable: true,
+      renderCell: (params) => formatDate(params.value),
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: "auto",
+      renderCell: (params) => (
+        <Box>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<Edit />}
+            onClick={() => handleEdit(params.row)}
+            size="small"
+            sx={{ mr: 1 }}
+          >
+            Edit
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={<Delete />}
+            onClick={() => handleDelete(params.row)}
+            size="small"
+          >
+            Delete
+          </Button>
+        </Box>
+      ),
+    },
+  ];
+
+  const rows = bannersData.map((banner, index) => ({
+    id: banner._id,
+    serial: index + 1,
+    redirectTo: banner.redirectTo || "N/A",
+    productName:
+      banner.redirectTo === "product" && banner.productId
+        ? banner.productId.name
+        : "N/A",
+    image: banner.image,
+    status: banner.status,
+    createdAt: banner.createdAt,
+  }));
 
   if (error) {
     return <div style={{ color: "red", padding: "10px" }}>{error}</div>;
@@ -153,7 +159,6 @@ const BannerList = () => {
 
   return (
     <>
-      {displayTable()}
       <Dialog open={open} onClose={handleClose} maxWidth="sm">
         <DialogTitle>Banner Image</DialogTitle>
         <DialogContent>
@@ -163,7 +168,31 @@ const BannerList = () => {
             style={{ width: "100%" }}
           />
         </DialogContent>
-      </Dialog>
+      </Dialog>  
+
+      <Paper elevation={3} style={{ padding: "10px", borderRadius: "8px" }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+            Display Banner
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddCircleRounded />}
+            onClick={() => navigate("/banner/add")}
+          >
+            Add New
+          </Button>
+        </Box>
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          pageSize={5}
+          rowsPerPageOptions={[5, 10, 25]}
+          checkboxSelection
+          disableSelectionOnClick
+        />
+      </Paper>
     </>
   );
 };

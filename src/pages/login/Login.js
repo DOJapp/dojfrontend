@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Grid, TextField, Button, CircularProgress } from "@mui/material";
+import {
+  Grid,
+  TextField,
+  Button,
+  CircularProgress,
+  Box,
+  Typography,
+} from "@mui/material";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import logo_icon from "../../assets/login_background.jpg";
 import { loginRequest } from "../../redux/Actions/authActions";
-import { useStyles } from "../../assets/styles";
-import "./Login.css";
 
 const Login = () => {
   const dispatch = useDispatch();
-  const classes = useStyles();
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,7 +31,7 @@ const Login = () => {
     }
 
     if (error) {
-      Swal.fire("Error", error, "error"); // Display error if login fails
+      Swal.fire("Error", error, "error");
     }
   }, [isAuthenticated, error, navigate]);
 
@@ -53,8 +57,8 @@ const Login = () => {
   };
 
   return (
-    <div
-      style={{
+    <Box
+      sx={{
         backgroundSize: "cover",
         backgroundRepeat: "no-repeat",
         height: "100vh",
@@ -64,34 +68,41 @@ const Login = () => {
         backgroundColor: "#000",
       }}
     >
-      <div className={classes.loginBox}>
+      <Box
+        sx={{
+          width: 400,
+          padding: 4,
+          backgroundColor: "white",
+          borderRadius: 2,
+          boxShadow: 3,
+        }}
+      >
         <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <div
-              className={classes.loginheadingContainer}
+          <Grid
+            item
+            xs={12}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <img
+              src={logo_icon}
+              alt="Logo"
               style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
+                width: "5rem",
+                height: "5rem",
+                borderRadius: "50%",
+                marginBottom: "1rem",
               }}
+            />
+            <Typography
+              variant="h5"
+              sx={{ textAlign: "center", color: "#000", marginBottom: 2 }}
             >
-              <img
-                src={logo_icon}
-                alt="Logo"
-                style={{
-                  width: "5rem",
-                  height: "5rem",
-                  borderRadius: "50%",
-                  marginBottom: "1rem",
-                }}
-              />
-              <div
-                className={classes.loginheading}
-                style={{ textAlign: "center", color: "#000" }}
-              >
-                Doj Admin
-              </div>
-            </div>
+              Doj Admin
+            </Typography>
           </Grid>
           <Grid item xs={12}>
             <TextField
@@ -112,7 +123,10 @@ const Login = () => {
               margin="normal"
               InputProps={{
                 endAdornment: (
-                  <Button onClick={() => setPasswordVisible((prev) => !prev)}>
+                  <Button
+                    onClick={() => setPasswordVisible((prev) => !prev)}
+                    sx={{ textTransform: "none" }}
+                  >
                     {passwordVisible ? "Hide" : "Show"}
                   </Button>
                 ),
@@ -126,6 +140,11 @@ const Login = () => {
               fullWidth
               onClick={handleLogin}
               disabled={isLoading}
+              sx={{
+                padding: "10px 0",
+                textTransform: "none",
+                fontWeight: "bold",
+              }}
             >
               {isLoading ? (
                 <CircularProgress size={24} color="inherit" />
@@ -135,8 +154,8 @@ const Login = () => {
             </Button>
           </Grid>
         </Grid>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 
