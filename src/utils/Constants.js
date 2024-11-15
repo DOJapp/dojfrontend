@@ -1,8 +1,8 @@
-// export const base_url = "http://165.232.182.110:4000/";
-// export const api_url = "http://165.232.182.110:4000/api/";
+export const base_url = "http://52.66.205.165/";
+export const api_url = "http://52.66.205.165/api/v1/";
 
-export const base_url = "http://localhost:8000/";
-export const api_url = "http://localhost:8000/api/v1/";
+// export const base_url = "http://localhost:8000/";
+// export const api_url = "http://localhost:8000/api/v1/";
 
 export const get_dashboard = 'admin/get_dashboard'
 
