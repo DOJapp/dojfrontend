@@ -12,6 +12,7 @@ class _ApiRequest {
 
   // Method to make POST requests
   postRequest = async ({ url = null, data = null, header = "form" }) => {
+    console.log("url",url);
     // try {
       const token = getAccessToken(); 
       const response = await axios({
