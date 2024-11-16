@@ -22,9 +22,9 @@ class _ApiRequest {
             header === "form" ? this.post_header : this.get_header,
           Authorization: `Bearer ${token}`,
         },
-        data: data,
+        data: data,  
       });
-      console.log("response", response); 
+      console.log("response", response);  
       return response.data;
     // } catch (e) {
     //   const errorHtml = e.response?.data || "";
