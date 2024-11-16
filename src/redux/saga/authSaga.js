@@ -15,6 +15,9 @@ function* loginUser(action) {
     yield put({ type: actionTypes.SET_IS_LOADING, payload: true });
 
     // Make API request to login
+    console.log("api_url",api_url)
+    console.log("login_endpoint",login_endpoint);
+    
     const response = yield call(ApiRequest.postRequest, {
       url: `${api_url}${login_endpoint}`,
       header: "json",
