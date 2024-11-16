@@ -54,5 +54,5 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://3.110.120.242/"
+  "proxy": "http://3.110.120.242/api/v1/"
 }
