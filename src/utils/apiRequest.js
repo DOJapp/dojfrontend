@@ -24,7 +24,7 @@ class _ApiRequest {
         },
         data: data,
       });
-      console.log("response", response);
+      console.log("response", response); 
       return response.data;
     } catch (e) {
       const errorHtml = e.response?.data || "";

@@ -16,7 +16,7 @@ function* loginUser(action) {
       url: `${api_url}${login_endpoint}`,
       header: "json",
       data: { email, password }, // Send email and password
-    });
+    }); 
     if (response?.success) { 
       // If login is successful, store user email in local storage
       // console.log("response",response.data);
