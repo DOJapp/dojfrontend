@@ -12,7 +12,6 @@ class _ApiRequest {
 
   // Method to make POST requests
   postRequest = async ({ url = null, data = null, header = "form" }) => {
-    console.log("url", url);
     try {
       const token = getAccessToken();
       const response = await axios({
@@ -35,8 +34,8 @@ class _ApiRequest {
         ? errorMessageMatch[1].trim()
         : "An error occurred";
 
-      console.error("Error in postRequest:", errorMessage); // Improved error logging
-      return { success: false, message: errorMessage }; // Return a structured error response
+      console.error("Error in postRequest:", errorMessage); 
+      return { success: false, message: errorMessage };
     }
   };
 
