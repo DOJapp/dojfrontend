@@ -12,8 +12,7 @@ class _ApiRequest {
 
   // Method to make POST requests
   postRequest = async ({ url = null, data = null, header = "form" }) => {
-    console.log("url",url);
-    // try {
+    try {
       const token = getAccessToken(); 
       const response = await axios({
         method: "post",
@@ -23,21 +22,21 @@ class _ApiRequest {
             header === "form" ? this.post_header : this.get_header,
           Authorization: `Bearer ${token}`,
         },
-        data: data,  
+        data: data,
       });
-      console.log("response", response);  
+      console.log("response", response); 
       return response.data;
-    // } catch (e) {
-    //   const errorHtml = e.response?.data || "";
-    //   const errorMessageMatch = errorHtml.match(/Error: (.*?)(?:<|$)/); 
+    } catch (e) {
+      const errorHtml = e.response?.data || "";
+      const errorMessageMatch = errorHtml.match(/Error: (.*?)(?:<|$)/); 
 
-    //   const errorMessage = errorMessageMatch
-    //     ? errorMessageMatch[1].trim()
-    //     : "An error occurred";
+      const errorMessage = errorMessageMatch
+        ? errorMessageMatch[1].trim()
+        : "An error occurred";
 
-    //   console.error("Error in postRequest:", errorMessage); // Improved error logging
-    //   return { success: false, message: errorMessage }; // Return a structured error response
-    // }
+      console.error("Error in postRequest:", errorMessage); // Improved error logging
+      return { success: false, message: errorMessage }; // Return a structured error response
+    }
   };
 
   // Method to make GET requests
