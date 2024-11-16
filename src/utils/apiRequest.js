@@ -34,7 +34,7 @@ class _ApiRequest {
         ? errorMessageMatch[1].trim()
         : "An error occurred";
 
-      console.error("Error in postRequest:", errorMessage); 
+      console.error("Error in postRequest:", errorMessage);
       return { success: false, message: errorMessage };
     }
   };
