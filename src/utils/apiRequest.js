@@ -12,7 +12,6 @@ class _ApiRequest {
 
   // Method to make POST requests
   postRequest = async ({ url = null, data = null, header = "form" }) => {
-
     try {
       const token = getAccessToken(); // Get access token
       const response = await axios({
@@ -25,14 +24,16 @@ class _ApiRequest {
         },
         data: data,
       });
-
-      return response.data; // Return the response data directly
+      console.log("response", response);
+      return response.data;
     } catch (e) {
-      const errorHtml = e.response?.data || '';
-      const errorMessageMatch = errorHtml.match(/Error: (.*?)(?:<|$)/); // Match "Error: ..." until the next tag or end
-  
-      const errorMessage = errorMessageMatch ? errorMessageMatch[1].trim() : "An error occurred";
-  
+      const errorHtml = e.response?.data || "";
+      const errorMessageMatch = errorHtml.match(/Error: (.*?)(?:<|$)/); 
+
+      const errorMessage = errorMessageMatch
+        ? errorMessageMatch[1].trim()
+        : "An error occurred";
+
       console.error("Error in postRequest:", errorMessage); // Improved error logging
       return { success: false, message: errorMessage }; // Return a structured error response
     }
@@ -53,7 +54,6 @@ class _ApiRequest {
 
       return response.data; // Return the response data directly
     } catch (e) {
-      
       console.error("Error in getRequest:", e); // Improved error logging
       return { success: false, message: e.message }; // Return a structured error response
     }

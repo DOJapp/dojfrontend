@@ -17,7 +17,6 @@ function* loginUser(action) {
       header: "json",
       data: { email, password }, // Send email and password
     });
-    console.log("response", response); 
     if (response?.success) { 
       // If login is successful, store user email in local storage
       // console.log("response",response.data);
