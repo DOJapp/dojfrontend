@@ -6,7 +6,7 @@ import { api_url, login_endpoint } from "../../utils/Constants";
 
 function* loginUser(action) {
   try {
-    const { email, password } = action.payload; 
+    const { email, password } = action.payload;
 
     // Show loading state
     yield put({ type: actionTypes.SET_IS_LOADING, payload: true });
@@ -17,13 +17,13 @@ function* loginUser(action) {
       header: "json",
       data: { email, password }, // Send email and password
     });
-
+    console.log("response", response);
     if (response?.success) {
       // If login is successful, store user email in local storage
       // console.log("response",response.data);
       localStorage.setItem("accessToken", response.data.accessToken);
       localStorage.setItem("refreshToken", response.data.refreshToken);
-      
+
       // Dispatch login success action
       yield put({
         type: actionTypes.LOGIN_SUCCESS,
@@ -38,7 +38,6 @@ function* loginUser(action) {
         timer: 2000,
       });
     } else {
-
       // Handle login failure
       yield put({
         type: actionTypes.LOGIN_FAILURE,
@@ -69,10 +68,10 @@ function* logoutUser() {
     // Clear user data from local storage
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
-    
+
     // Dispatch logout action
     yield put({ type: actionTypes.LOGOUT });
-    
+
     Swal.fire({
       icon: "success",
       title: "Logout Successful",
