@@ -18,7 +18,7 @@ function* loginUser(action) {
       data: { email, password }, // Send email and password
     });
     console.log("response", response);
-    if (response?.success) {
+    if (response?.success) { 
       // If login is successful, store user email in local storage
       // console.log("response",response.data);
       localStorage.setItem("accessToken", response.data.accessToken);
