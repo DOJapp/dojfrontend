@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Helper function to retrieve access token
 const getAccessToken = () => {
-  return localStorage.getItem("accessToken"); // Adjust based on where you're storing the token
+  return localStorage.getItem("accessToken");
 };
 
 class _ApiRequest {

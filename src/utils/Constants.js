@@ -1,5 +1,5 @@
-export const base_url = "http://3.110.120.242/api/v1/";
-export const api_url = "http://3.110.120.242/api/v1/";
+// export const base_url = "http://3.110.120.242/api/v1/";
+// export const api_url = "http://3.110.120.242/api/v1/";
 
 // export const base_url = process.env.REACT_APP_BASE_URL;
 // export const api_url = process.env.REACT_APP_API_URL;
