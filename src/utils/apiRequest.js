@@ -12,8 +12,9 @@ class _ApiRequest {
 
   // Method to make POST requests
   postRequest = async ({ url = null, data = null, header = "form" }) => {
+    console.log("url", url);
     try {
-      const token = getAccessToken(); 
+      const token = getAccessToken();
       const response = await axios({
         method: "post",
         url: url,
@@ -24,11 +25,11 @@ class _ApiRequest {
         },
         data: data,
       });
-      console.log("response", response); 
+      console.log("response", response);
       return response.data;
     } catch (e) {
       const errorHtml = e.response?.data || "";
-      const errorMessageMatch = errorHtml.match(/Error: (.*?)(?:<|$)/); 
+      const errorMessageMatch = errorHtml.match(/Error: (.*?)(?:<|$)/);
 
       const errorMessage = errorMessageMatch
         ? errorMessageMatch[1].trim()
