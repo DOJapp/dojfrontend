@@ -43,6 +43,7 @@ const Header = ({ dispatch, isSidebarOpen }) => {
     });
 
     if (result.isConfirmed) {
+      console.log(("first"))
       try {
         setData(null);
         localStorage.clear();

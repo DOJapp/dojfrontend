@@ -18,7 +18,6 @@ import axios from "axios";
 import FileUpload from "../../Components/FileUpload";
 import BankDetails from "./BankDetails.js";
 import { connect, useDispatch, useSelector } from "react-redux";
-import Loader from "../../Components/loading/Loader.js";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { createPartner } from "../../redux/Actions/partnerActions.js";

@@ -5,7 +5,7 @@ import Chart from "react-apexcharts";
 import { Grid, Tooltip } from "@mui/material";
 import { connect } from "react-redux";
 import * as DashboardActions from '../../redux/Actions/dashboardActions';
-import Loader from "../../Components/loading/Loader";
+// import Loader from "../../Components/loading/Loader";
 
 const Dashboard = ({ dashboardData, dispatch }) => {
   const classes = useStyles();
@@ -76,7 +76,7 @@ const Dashboard = ({ dashboardData, dispatch }) => {
 
   return (
     <div className={classes.dashboard_container}>
-      <Loader />
+      {/* <Loader /> */}
       <div className={classes.dashboard_inner_container}>
         <Grid container spacing={2}>
           {/* Summary Cards */}
