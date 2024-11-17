@@ -19,7 +19,7 @@ function* loginUser(action) {
     console.log("login_endpoint",login_endpoint);
 
     const response = yield call(ApiRequest.postRequest, {
-      url: `${login_endpoint}`,
+      url: `${api_url}${login_endpoint}`,
       header: "json",
       data: { email, password }, // Send email and password
     }); 
